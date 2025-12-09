@@ -29,10 +29,9 @@ def root():
 
 #**********ROUTE USER***************
 app.include_router(users.router)
-#pip3 install bcrypt==3.2.0(uninstall aloha)
-#pip install passlib
 
-#Au debut 
+
+#Au debut (tsy mety)
 """
 @app.post("/signup")
 async def signup(user:UserSchema):
