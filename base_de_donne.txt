@@ -1,0 +1,26 @@
+Démarrer le service : 
+sudo systemctl restart postgresql
+
+Créer un fichier init.sql :
+
+CREATE DATABASE FlexiLearn;
+CREATE USER admin WITH PASSWORD 'admin';
+GRANT ALL PRIVILEGES ON DATABASE FlexiLearn TO admin;
+GRANT ALL ON SCHEMA public TO admin;
+ALTER SCHEMA public OWNER TO admin;
+
+
+Puis exécuter :
+
+sudo -u postgres psql -f init.sql
+
+🟩 Vérifier si la base existe
+sudo -u postgres psql -c "\l"
+
+
+🟩 Tester la connexion manuellement
+
+psql postgresql://myuser:mypassword@localhost:5432/mydb
+
+
+Si tu arrives dedans → la connexion marche.
