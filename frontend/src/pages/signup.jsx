@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import "../styles/signin&signup.css";
 import app_icone from "../assets/icones/app_icon.png";
 import mail_icone from "../assets/icones/email.png";
+import eye_icone from "../assets/icones/eye.png";
+import eye_hide_icone from "../assets/icones/eye_hide.png";
 import lock_icone from "../assets/icones/lock.png";
 import user_icone from "../assets/icones/user.png";
 import logo_image from "../assets/images/logo.png";
@@ -57,7 +59,10 @@ export default function SignIn() {
           />
 
           <p className="signup-left">
-            Have you Account? <Link to="/signin">Sign in</Link>
+            Have you Account?{" "}
+            <Link to="/signin" className="underline-link">
+              Sign in
+            </Link>
           </p>
         </div>
 
@@ -111,16 +116,20 @@ export default function SignIn() {
               />
 
               <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
-                👁
+                <img
+                  src={showPwd ? eye_icone : eye_hide_icone}
+                  alt="toggle"
+                  className="pwd-icon"
+                />
               </span>
             </div>
 
             <div className="options">
               <label>
-                <input type="checkbox" /> Remember me
+                <input type="checkbox" defaultChecked={false} /> Remember me
               </label>
 
-              <a href="#" className="forgot-link">
+              <a href="#" className="forgot-link underline-link">
                 Forgot Password?
               </a>
             </div>

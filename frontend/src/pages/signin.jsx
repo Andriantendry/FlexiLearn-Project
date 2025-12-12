@@ -5,6 +5,8 @@ import mail_icone from "../assets/icones/email.png";
 import lock_icone from "../assets/icones/lock.png";
 import { Link } from "react-router-dom";
 import logo_image from "../assets/images/logo.png";
+import eye_icone from "../assets/icones/eye.png";
+import eye_hide_icone from "../assets/icones/eye_hide.png";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
@@ -48,7 +50,10 @@ export default function SignIn() {
         <img src={app_icone} alt="Team Illustration" className="illustration" />
 
         <p className="signup-left">
-          Don’t Have Account? <Link to="/signup">Sign up</Link>
+          Don’t Have Account?{" "}
+          <Link to="/signup" className="underline-link">
+            Sign up
+          </Link>
         </p>
       </div>
 
@@ -90,7 +95,11 @@ export default function SignIn() {
             />
 
             <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
-              👁
+              <img
+                src={showPwd ? eye_icone : eye_hide_icone}
+                alt="toggle"
+                className="pwd-icon"
+              />
             </span>
           </div>
 
@@ -99,7 +108,7 @@ export default function SignIn() {
               <input type="checkbox" /> Remember me
             </label>
 
-            <a href="#" className="forgot-link">
+            <a href="#" className="forgot-link underline-link">
               Forgot Password?
             </a>
           </div>

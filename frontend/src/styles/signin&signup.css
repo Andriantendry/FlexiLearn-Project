@@ -57,10 +57,11 @@ body {
   margin-top: auto;
   font-size: 15px;
   color: #333;
+  gap: 10px;
 }
 
-.signup-left a {
-  color: #5863f8;
+.signup-left Link {
+  color: #8358f8;
   text-decoration: none;
   font-weight: 600;
 }
@@ -138,11 +139,29 @@ h2 {
 }
 
 /* eye icon */
+.password-box {
+  position: relative; /* obligatoire */
+}
 .password-box .toggle-pwd {
   position: absolute;
   right: 15px;
   cursor: pointer;
   opacity: 0.7;
+}
+
+.toggle-pwd img.pwd-icon {
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.toggle-pwd img.pwd-icon:hover {
+  opacity: 1;
 }
 
 /* options */
@@ -195,5 +214,21 @@ h2 {
 
 .signup-mode .signin-right {
   padding-top: 10px !important;
+}
+
+input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #8155f8; /* Violet propre */
+  cursor: pointer;
+  border-radius: 4px;
+  fill: none;
+}
+
+.underline-link {
+  text-decoration: underline;
+}
+.underline-link:hover {
+  opacity: 0.8;
 }
 
