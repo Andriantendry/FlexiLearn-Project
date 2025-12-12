@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 POSTGRES_USER="admin"
 POSTGRES_PASSWORD="admin"
-POSTGRES_DB="flexilearn"
+POSTGRES_DB="FlexiLearn"
 
 DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
 

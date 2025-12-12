@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, String, DateTime
+from sqlalchemy import Integer, Column, String, DateTime, JSON
 from datetime import datetime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -14,3 +14,6 @@ class User(Base):
     email = Column(String, unique=True)
     password = Column(String)
     create_at = Column( DateTime(timezone=True),server_default=func.now())
+    answers = Column(JSON)
+    profile = Column(String)
+    statistiques = Column(JSON)

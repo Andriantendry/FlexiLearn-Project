@@ -6,6 +6,7 @@ from schemas import UserSchema
 from utils.hashing import hash_password
 from routes import users
 from routes import predict
+from routes import update_users
 
 app = FastAPI()
 
@@ -31,6 +32,8 @@ def root():
 #**********ROUTE USER***************
 app.include_router(users.router)
 app.include_router(predict.router, prefix="/api")
+app.include_router(update_users.router)
+
 
 
 #Au debut (tsy mety)

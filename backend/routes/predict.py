@@ -8,10 +8,10 @@ from schemas import QuizInput
 router = APIRouter()
 
 # Charger modèle et encoders au démarrage
-with open("route/model.pkl", "rb") as f:
+with open("routes/model.pkl", "rb") as f:
     model = pickle.load(f)
 
-with open("route/encoders.pkl", "rb") as f:
+with open("routes/encoders.pkl", "rb") as f:
     encoders = pickle.load(f)
 
 
@@ -224,6 +224,6 @@ def predict(quiz: QuizInput):
     proba_dict = {profil: round(p*100, 2) for profil, p in zip(model.classes_, probas)}
 
     return {
-        "profil_dominant": pred,
-        "statistiques_en_pourcentage": proba_dict
+        "profile": pred,
+        "statistiques": proba_dict
     }
