@@ -1,21 +1,19 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 import pandas as pd
 import pickle
 from typing import Dict
+from schemas import QuizInput
+
 
 router = APIRouter()
 
 # Charger modèle et encoders au démarrage
-with open("ml/model.pkl", "rb") as f:
+with open("route/model.pkl", "rb") as f:
     model = pickle.load(f)
 
-with open("ml/encoders.pkl", "rb") as f:
+with open("route/encoders.pkl", "rb") as f:
     encoders = pickle.load(f)
 
-# Définition du modèle d'entrée
-class QuizInput(BaseModel):
-    answers: Dict[int, str]
 
 
 QUESTIONS = [
@@ -204,8 +202,6 @@ QUESTIONS = [
 def get_quiz():
     return {"questions": QUESTIONS}
 
-class QuizInput(BaseModel):
-    answers: Dict[int, str]
 
 # Route de prédiction
 @router.post("/predict")
