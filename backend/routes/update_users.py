@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import get_db
-from models_db import User
+from models_db import User, Profile
 from pydantic import BaseModel
 from typing import Dict, Optional
 from schemas import UserUpdate
@@ -13,18 +13,21 @@ router = APIRouter(
 @router.post("/enregistrement des résultats")
 
 def update_user(data: UserUpdate, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == data.username).first()
-    if not user:
-        user = User(username=data.username)
-        db.add(user)
-    
-    if data.answers:
-        user.answers = data.answers
-    if data.profile:
-        user.profile = data.profile
-    if data.statistiques:
-        user.statistiques = data.statistiques
+    profile = db.query(Profile).filter(Profile.id == data.id).first()
+    if not profile:
+        profile = Profile(
+            id = data.id,
+            answers = data.answers,
+            profile = data.profile,
+            statistiques = data.statistiques
+            )
+        db.add(profile)
+
+    else:
+        profile.answers = data.answers
+        profile.profile = data.profile
+        profile.statistiques = data.statistiques
 
     db.commit()
-    db.refresh(user)
-    return user
+    db.refresh(profile)
+    return {"message" : "Profile enregistré avec succès", "data": profile}

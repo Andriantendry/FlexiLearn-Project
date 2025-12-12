@@ -14,7 +14,7 @@ class UserLoginSchema(BaseModel):
     password : str
 
 class UserUpdate(BaseModel):
-    username: str
+    id : int
     answers: Optional[Dict[str, str]] = None
     profile: Optional[str] = None
     statistiques: Optional[Dict[str, float]] = None  
