@@ -1,0 +1,199 @@
+/* === GLOBAL RESET === */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Inter", sans-serif;
+  background: #eef1ff;
+}
+
+.signin-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* === LEFT PANEL === */
+.signin-left {
+  width: 50%;
+  padding: 40px 60px;
+  background: #f5f7ff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+.brand {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #1b1b1b;
+}
+
+.brand span {
+  color: #4a63e7;
+}
+
+.subtitle {
+  color: #333;
+  margin-top: 10px;
+  margin-bottom: 0px;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.illustration {
+  width: 75%;
+  max-height: 50vh;
+  object-fit: contain;
+  align-self: center;
+  margin-top: 40px;
+}
+
+.signup-left {
+  margin-top: auto;
+  font-size: 15px;
+  color: #333;
+}
+
+.signup-left a {
+  color: #5863f8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* === RIGHT PANEL === */
+.signin-right {
+  width: 50%;
+  padding-top: 25px !important;
+  padding: 40px 60px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.signin-logo {
+  width: 85px;
+  margin: 10px auto 20px;
+}
+
+h2 {
+  color: #222;
+  text-align: center;
+  margin-top: 0px;
+  margin-bottom: 5px;
+}
+
+.info {
+  margin-top: 0px;
+  text-align: center;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* === FORM === */
+.signin-form {
+  width: 80%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* labels */
+.field-label {
+  text-align: left !important;
+  font-size: 14px;
+  color: #222;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+/* input blocks */
+.input-box {
+  background: #edf0ff;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border: 1px solid #cdd6ff;
+}
+
+.input-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 15px;
+  color: #222;
+}
+
+.input-icon {
+  width: 18px;
+  margin-right: 10px;
+}
+
+/* eye icon */
+.password-box .toggle-pwd {
+  position: absolute;
+  right: 15px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+/* options */
+.options {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.options label {
+  color: #222;
+}
+
+.forgot-link {
+  color: #8155f8;
+  font-weight: 500;
+}
+
+/* button */
+.login-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  background: #8155f8;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  background: #6d43e2;
+}
+
+/* REMOVE bottom signup on right */
+.signup-right {
+  display: none !important;
+}
+
+/* Signup: réduire un peu l’espace vertical */
+.signup-mode .input-box {
+  margin-bottom: 15px;
+}
+
+.signup-mode .field-label {
+  margin-bottom: 4px;
+}
+
+.signup-mode .signin-right {
+  padding-top: 10px !important;
+}
+

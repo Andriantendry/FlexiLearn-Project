@@ -1,72 +1,134 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import "../styles/signin&signup.css";
+import app_icone from "../assets/icones/app_icon.png";
+import mail_icone from "../assets/icones/email.png";
+import lock_icone from "../assets/icones/lock.png";
+import user_icone from "../assets/icones/user.png";
+import logo_image from "../assets/images/logo.png";
 
-export default function SignupPage() {
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
-  const [message, setMessage] = useState("");
+import { Link } from "react-router-dom";
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+export default function SignIn() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setMessage("");
 
     try {
       const res = await fetch("http://localhost:8001/user/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ username, email, password }),
       });
 
-      if (!res.ok) throw new Error("Erreur serveur");
-
       const data = await res.json();
-      console.log(data);
-      setMessage(data.message || "Inscription réussie");
-    } catch (err) {
-      setMessage("Erreur: " + err.message);
+      console.log("API response:", data);
+
+      if (!res.ok) alert("Login failed");
+      else alert("Login successful!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Server connection error");
     }
   };
 
   return (
-    <div>
-      <h1>Signup</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username: </label>
-          <input
-            type="text"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
+    <div className="signin-container">
+      <div className="signin-container signup-mode">
+        {/* LEFT PANEL */}
+        <div className="signin-left">
+          <h1 className="brand">
+            Learn<span>Flow</span> <br /> Platform
+          </h1>
+
+          <p className="subtitle">
+            Shapes your way of learning,
+            <br />
+            optimizing progress through adaptive intelligence.{" "}
+          </p>
+
+          <img
+            src={app_icone}
+            alt="Team Illustration"
+            className="illustration"
           />
+
+          <p className="signup-left">
+            Have you Account? <Link to="/signin">Sign in</Link>
+          </p>
         </div>
 
-        <div>
-          <label>Email: </label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-          />
+        {/* RIGHT PANEL */}
+        <div className="signin-right">
+          <img src={logo_image} alt="Logo" className="signin-logo" />
+
+          <h2>Welcome</h2>
+
+          <p className="info">
+            Create your account using your phone no/email & password
+          </p>
+
+          <form className="signin-form" onSubmit={handleLogin}>
+            {/* USERNAME */}
+            <label className="field-label">Username</label>
+            <div className="input-box">
+              <img src={user_icone} className="input-icon" />
+              <input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            {/* EMAIL FIELD */}
+            <label className="field-label">Email Address</label>
+            <div className="input-box">
+              <img src={mail_icone} className="input-icon" alt="" />
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            {/* PASSWORD FIELD */}
+            <label className="field-label">Your Password</label>
+            <div className="input-box password-box">
+              <img src={lock_icone} className="input-icon" alt="" />
+
+              <input
+                type={showPwd ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
+                👁
+              </span>
+            </div>
+
+            <div className="options">
+              <label>
+                <input type="checkbox" /> Remember me
+              </label>
+
+              <a href="#" className="forgot-link">
+                Forgot Password?
+              </a>
+            </div>
+
+            <button className="login-btn">SIGNUP</button>
+          </form>
         </div>
-
-        <div>
-          <label>Password: </label>
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-          />
-        </div>
-
-        <button type="submit">Créer le compte</button>
-      </form>
-
-      {message && <p>{message}</p>}
+      </div>
     </div>
   );
 }
