@@ -15,7 +15,7 @@ class User(Base):
     password = Column(String)
     create_at = Column( DateTime(timezone=True),server_default=func.now())
     
-     profile = relationship("Profile", back_populates="user", uselist=False)
+    profile = relationship("Profile", back_populates="user", uselist=False)
 
 class Profile(Base):
     __tablename__ = "profile"
@@ -24,4 +24,6 @@ class Profile(Base):
     answers = Column(JSON)
     profile = Column(String)
     statistiques = Column(JSON)
+
+    user = relationship("User", back_populates="profile")
 
