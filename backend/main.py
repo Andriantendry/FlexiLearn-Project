@@ -4,7 +4,8 @@ from database import engine, test_connection
 from models_db import Base,User
 from schemas import UserSchema
 from utils.hashing import hash_password
-from routes import users 
+from routes import users
+from routes import predict
 
 app = FastAPI()
 
@@ -29,6 +30,7 @@ def root():
 
 #**********ROUTE USER***************
 app.include_router(users.router)
+app.include_router(predict.router, prefix="/api")
 
 
 #Au debut (tsy mety)
