@@ -26,4 +26,3 @@ class Profile(Base):
     statistiques = Column(JSON)
 
     user = relationship("User", back_populates="profile")
-
