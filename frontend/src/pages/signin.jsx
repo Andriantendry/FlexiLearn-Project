@@ -3,7 +3,7 @@ import "../styles/signin&signup.css";
 import app_icone from "../assets/icones/app_icon.png";
 import mail_icone from "../assets/icones/email.png";
 import lock_icone from "../assets/icones/lock.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // ← Ajout de useNavigate
 import logo_image from "../assets/images/logo.png";
 import eye_icone from "../assets/icones/eye.png";
 import eye_hide_icone from "../assets/icones/eye_hide.png";
@@ -12,12 +12,16 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false); // Optionnel : pour désactiver le bouton pendant la requête
+
+  const navigate = useNavigate(); // ← Hook pour la navigation
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8001/user/signin", {
+      const res = await fetch("http://localhost:8000/user/signin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -26,11 +30,31 @@ export default function SignIn() {
       const data = await res.json();
       console.log("API response:", data);
 
-      if (!res.ok) alert("Signup failed");
-      else alert("Inscription réussi successful!");
+      if (!res.ok) {
+        // L'API renvoie probablement un message d'erreur dans data.message ou similaire
+        alert(data.message || "Échec de la connexion. Vérifiez vos identifiants.");
+        return;
+      }
+
+      // Succès : on suppose que l'API renvoie { user_id, ... } ou { user: { id: ... } }
+      // À adapter selon la structure réelle de ta réponse
+      const userId = data.user_id || data.user?.id || data.id;
+
+      if (userId) {
+        localStorage.setItem("user_id", userId);
+        // Optionnel : stocker un token si ton API en renvoie un
+        // localStorage.setItem("token", data.token);
+
+        alert("Connexion réussie !");
+        navigate("/quiz"); // ← Redirection après succès
+      } else {
+        alert("Réponse inattendue du serveur.");
+      }
     } catch (error) {
       console.error("Error:", error);
-      alert("Server connection error");
+      alert("Erreur de connexion au serveur. Veuillez réessayer plus tard.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,9 +69,9 @@ export default function SignIn() {
         <p className="subtitle">
           Shapes your way of learning,
           <br />
-          optimizing progress through adaptive intelligence.{" "}
+          optimizing progress through adaptive intelligence.
         </p>
-        <img src={app_icone} alt="Team Illustration" className="illustration" />
+        <img src={app_icone} alt="Illustration d'équipe" className="illustration" />
 
         <p className="signup-left">
           Don’t Have Account?{" "}
@@ -78,6 +102,7 @@ export default function SignIn() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
@@ -85,27 +110,26 @@ export default function SignIn() {
           <label className="field-label">Your Password</label>
           <div className="input-box password-box">
             <img src={lock_icone} className="input-icon" alt="" />
-
             <input
               type={showPwd ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
-
             <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
               <img
                 src={showPwd ? eye_icone : eye_hide_icone}
-                alt="toggle"
+                alt={showPwd ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                 className="pwd-icon"
               />
             </span>
           </div>
 
           <div className="options">
-            <label>
-              <input type="checkbox" /> Remember me
+            <label className="remember-me">
+              <input type="checkbox" disabled={loading} /> Remember me
             </label>
 
             <a href="#" className="forgot-link underline-link">
@@ -113,7 +137,9 @@ export default function SignIn() {
             </a>
           </div>
 
-          <button className="login-btn">LOGIN</button>
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? "Loading..." : "LOGIN"}
+          </button>
         </form>
       </div>
     </div>
