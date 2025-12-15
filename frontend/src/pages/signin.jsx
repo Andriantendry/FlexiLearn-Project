@@ -3,7 +3,7 @@ import "../styles/signin&signup.css";
 import app_icone from "../assets/icones/app_icon.png";
 import mail_icone from "../assets/icones/email.png";
 import lock_icone from "../assets/icones/lock.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo_image from "../assets/images/logo.png";
 import eye_icone from "../assets/icones/eye.png";
 import eye_hide_icone from "../assets/icones/eye_hide.png";
@@ -13,6 +13,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
 
+  const navigate = useNavigate();
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -25,9 +26,20 @@ export default function SignIn() {
 
       const data = await res.json();
       console.log("API response:", data);
+      // Récupère l'ID utilisateur (adapté à ta backend)
+      const userId = data.user_id || data.user?.id || data.id;
+      if (userId) {
+        localStorage.setItem("user_id", userId);
+        alert(
+          "Connexion réussie ! Prêt à découvrir ton style d'apprentissage ? 🚀"
+        );
+        navigate("/quiz");
+      } else {
+        alert("Connexion réussie, mais ID manquant. Contacte le support.");
+      }
 
-      if (!res.ok) alert("Signup failed");
-      else alert("Inscription réussi successful!");
+      if (!res.ok) alert("Login failed");
+      else alert("Login successful!");
     } catch (error) {
       console.error("Error:", error);
       alert("Server connection error");
@@ -39,7 +51,7 @@ export default function SignIn() {
       {/* LEFT PANEL */}
       <div className="signin-left">
         <h1 className="brand">
-          Learn<span>Flow</span> <br /> Platform
+          Flexi<span>Learn</span> <br /> Platform
         </h1>
 
         <p className="subtitle">

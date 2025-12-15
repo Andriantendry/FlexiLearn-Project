@@ -35,4 +35,8 @@ def login(data : UserLoginSchema, db:Session=Depends(get_db)): #provient de l'ur
     if not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="mot de passe incorrect") #erreur affiche dans le fichier signin
 
-    return {"message": "connexion réussie"}
+    return {
+        "id" : user.id,
+        "username" : user.username,
+        "email" : user.email
+    }

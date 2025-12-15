@@ -8,16 +8,19 @@ import lock_icone from "../assets/icones/lock.png";
 import user_icone from "../assets/icones/user.png";
 import logo_image from "../assets/images/logo.png";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function SignIn() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const res = await fetch("http://localhost:8001/user/signup", {
@@ -25,18 +28,36 @@ export default function SignIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
       });
-
-      const data = await res.json();
+      /*
+      
       console.log("API response:", data);
-
-      if (!res.ok) alert("Login failed");
-      else alert("Login successful!");
+      if (!res.ok) alert("Signup failed");
+      else alert("Signup successful!");
     } catch (error) {
       console.error("Error:", error);
       alert("Server connection error");
     }
-  };
+  };*/
+      const data = await res.json();
+      const userId = data.user_id || data.user?.id || data.id;
 
+      if (userId) {
+        localStorage.setItem("user_id", userId);
+        alert(
+          "Compte créé avec succès ! Bienvenue sur FlexiLearn 🎉 Prêt à passer le quiz ?"
+        );
+        navigate("/quiz");
+      } else {
+        alert("Inscription réussie, mais redirection automatique impossible.");
+        navigate("/signin");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erreur serveur. Réessaie dans quelques instants.");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="signin-container">
       <div className="signin-container signup-mode">
