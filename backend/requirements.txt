@@ -1,3 +1,9 @@
-fasapi
+fastapi
 uvicorn
+psycopg2
 sqlalchemy
+python-dotenv
+passlib
+typing
+pandas
+scikit-learn

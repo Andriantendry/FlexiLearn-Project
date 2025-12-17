@@ -23,7 +23,7 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8001/user/signup", {
+      const res = await fetch("http://localhost:8000/user/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),

@@ -1,8 +1,7 @@
 /backend/__pycache__/
-/backend/.env 
-
 backend/explication.txt
 base_de_donne.txt
+.env
 # Logs
 logs
 *.log

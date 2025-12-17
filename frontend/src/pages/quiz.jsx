@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/quiz.css";
 import logo from "../assets/images/logo.png";
+import QuizResult from "./quiz_result";
 
 export default function Quiz() {
   const navigate = useNavigate();
@@ -10,17 +11,17 @@ export default function Quiz() {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState(null); // ← Résultat ici
+  const [result, setResult] = useState(null);
 
-  // Vérif connexion
+  /* ===== Vérif connexion ===== */
   useEffect(() => {
     const userId = localStorage.getItem("user_id");
     if (!userId) navigate("/signin");
   }, [navigate]);
 
-  // Chargement questions
+  /* ===== Chargement questions ===== */
   useEffect(() => {
-    fetch("http://localhost:8001/api/quiz")
+    fetch("http://localhost:8000/api/quiz")
       .then((res) => res.json())
       .then((data) => {
         setQuestions(data.questions || []);
@@ -33,13 +34,15 @@ export default function Quiz() {
       });
   }, []);
 
+  /* ===== Sélection réponse ===== */
   const handleSelect = (letter) => {
     setAnswers({ ...answers, [current + 1]: letter });
   };
 
+  /* ===== Suivant / Soumission ===== */
   const handleNext = () => {
     if (!answers[current + 1]) {
-      alert("Choisis une réponse avant de continuer ! 😊");
+      alert("Choisis une réponse avant de continuer 😊");
       return;
     }
 
@@ -50,36 +53,37 @@ export default function Quiz() {
     }
   };
 
+  /* ===== Soumission quiz ===== */
   const submitQuiz = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8001/api/predict", {
+      const res = await fetch("http://localhost:8000/api/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers }),
       });
 
       const data = await res.json();
-      console.log("Résultat reçu :", data); // ← Vérifie dans la console
-
       if (res.ok && data) {
-        setResult(data); // ← Force l'affichage
+        setResult(data);
       } else {
-        alert("Erreur soumission – vérifie la console");
+        alert("Erreur soumission");
       }
     } catch (err) {
       console.error(err);
-      alert("Erreur serveur lors de la soumission");
+      alert("Erreur serveur");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ===== Déconnexion ===== */
   const handleLogout = () => {
     localStorage.removeItem("user_id");
     navigate("/signin");
   };
 
+  /* ===== Loading ===== */
   if (loading) {
     return (
       <div className="quiz-container">
@@ -88,99 +92,14 @@ export default function Quiz() {
     );
   }
 
-  // AFFICHAGE RÉSULTAT CORRIGÉ
+  /* ===== AFFICHAGE RÉSULTAT ===== */
   if (result) {
-    const profile = result.profile || "Mixte";
-    const stats = result.statistiques || {};
-
-    const handleSaveAndLogout = async () => {
-      const userId = localStorage.getItem("user_id");
-      if (!userId) {
-        alert("Erreur : utilisateur non identifié");
-        navigate("/signin");
-        return;
-      }
-
-      const payload = {
-        id: parseInt(userId),
-        answers: answers, // Les réponses complètes du quiz
-        profile: profile,
-        statistiques: stats,
-      };
-
-      try {
-        const res = await fetch(
-          "http://localhost:8001/user/enregistrement des résultats",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }
-        );
-
-        const data = await res.json();
-        if (res.ok) {
-          alert(
-            "Résultat sauvegardé avec succès ! 🎉 Merci d'avoir découvert ton style d'apprentissage."
-          );
-        } else {
-          alert(
-            "Erreur sauvegarde : " + (data.message || "Vérifie la console")
-          );
-          console.error(data);
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Erreur réseau lors de la sauvegarde");
-      } finally {
-        localStorage.removeItem("user_id");
-        navigate("/signin");
-      }
-    };
-
     return (
-      <div className="quiz-container">
-        <header className="quiz-header">
-          <img src={logo} alt="FlexiLearn" className="quiz-logo" />
-          <button className="logout-btn" onClick={handleLogout}>
-            Déconnexion
-          </button>
-        </header>
-
-        <div className="quiz-content">
-          <div className="quiz-card result-card">
-            <h2 className="result-main-title">
-              Ton style d'apprentissage principal
-            </h2>
-
-            <div className="main-profile">{profile}</div>
-
-            <div className="result-stats">
-              {Object.entries(stats).map(([style, percent]) => (
-                <div key={style} className="result-stat-card">
-                  <div className="stat-label">{style}</div>
-                  <div className="stat-percent">{percent}%</div>
-                </div>
-              ))}
-            </div>
-
-            <button className="next-btn" onClick={handleSaveAndLogout}>
-              Sauvegarder et terminer la session
-            </button>
-          </div>
-        </div>
-        <button
-          className="scroll-btn"
-          onClick={() =>
-            document
-              .querySelector(".quiz-card")
-              ?.scrollIntoView({ behavior: "smooth", block: "center" })
-          }
-        ></button>
-      </div>
+      <QuizResult result={result} answers={answers} onLogout={handleLogout} />
     );
   }
-  // Quiz normal
+
+  /* ===== AFFICHAGE QUIZ ===== */
   const q = questions[current];
   const progressPercent =
     questions.length > 0 ? ((current + 1) / questions.length) * 100 : 0;
@@ -202,11 +121,12 @@ export default function Quiz() {
               style={{ width: `${progressPercent}%` }}
             />
           </div>
+
           <div className="progress-text">
             Question {current + 1} / {questions.length}
           </div>
 
-          <h2 className="question">{q?.Question || "Chargement..."}</h2>
+          <h2 className="question">{q?.Question}</h2>
 
           <div className="options">
             {["A", "B", "C", "D"].map((letter) => (
@@ -222,9 +142,7 @@ export default function Quiz() {
                     answers[current + 1] === letter ? "selected" : ""
                   }`}
                 />
-                <div className="option-text">
-                  {q?.[`Option_${letter}`] || ""}
-                </div>
+                <div className="option-text">{q?.[`Option_${letter}`]}</div>
               </div>
             ))}
           </div>

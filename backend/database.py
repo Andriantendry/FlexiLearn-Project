@@ -1,13 +1,9 @@
 # database.py
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+import os 
 
-POSTGRES_USER="admin"
-POSTGRES_PASSWORD="admin"
-POSTGRES_DB="flexilearn"
-
-DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
-
+DATABASE_URL = os.getenv("DATABASE_URL") # dans le fichier .env
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
