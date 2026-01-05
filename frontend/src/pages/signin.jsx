@@ -79,7 +79,7 @@ export default function SignIn() {
           Log in to your account using your phone no/email & password
         </p>
 
-        <form className="signin-form" onSubmit={handleLogin}>
+        <form className="signin-form" onSubmit={handleLogin} autoComplete="off">
           {/* EMAIL FIELD */}
           <label className="field-label">Email Address</label>
           <div className="input-box">
@@ -90,6 +90,7 @@ export default function SignIn() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
 
@@ -104,6 +105,7 @@ export default function SignIn() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="off"
             />
 
             <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>

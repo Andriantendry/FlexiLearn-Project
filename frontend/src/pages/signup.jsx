@@ -64,7 +64,7 @@ export default function SignIn() {
         {/* LEFT PANEL */}
         <div className="signin-left">
           <h1 className="brand">
-            Learn<span>Flow</span> <br /> Platform
+            Flexi<span>Learn</span> <br /> Platform
           </h1>
 
           <p className="subtitle">
@@ -97,7 +97,11 @@ export default function SignIn() {
             Create your account using your phone no/email & password
           </p>
 
-          <form className="signin-form" onSubmit={handleLogin}>
+          <form
+            className="signin-form"
+            onSubmit={handleLogin}
+            autoComplete="off"
+          >
             {/* USERNAME */}
             <label className="field-label">Username</label>
             <div className="input-box">
@@ -108,6 +112,7 @@ export default function SignIn() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                autoComplete="off"
               />
             </div>
             {/* EMAIL FIELD */}
@@ -120,6 +125,7 @@ export default function SignIn() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="off"
               />
             </div>
 
@@ -134,6 +140,7 @@ export default function SignIn() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="off"
               />
 
               <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>

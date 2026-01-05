@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/images/logo.png";
+import "../styles/quiz_result.css";
 
 export default function QuizResult({ result, answers, onLogout }) {
   const navigate = useNavigate();
@@ -12,6 +12,8 @@ export default function QuizResult({ result, answers, onLogout }) {
     const userId = localStorage.getItem("user_id");
     if (!userId) {
       navigate("/signin");
+      localStorage.clear();
+      sessionStorage.clear();
       return;
     }
 
@@ -47,35 +49,29 @@ export default function QuizResult({ result, answers, onLogout }) {
   };
 
   return (
-    <div className="quiz-container">
-      <header className="quiz-header">
-        <img src={logo} alt="FlexiLearn" className="quiz-logo" />
-        <button className="logout-btn" onClick={onLogout}>
-          Déconnexion
-        </button>
-      </header>
+    <div className="qr-container">
+      <div className="qr-card">
+        <h1 className="qr-title">🎉 Résultat de ton quiz</h1>
+        <p className="qr-subtitle">Voici ton style d’apprentissage dominant</p>
 
-      <div className="quiz-content">
-        <div className="quiz-card result-card">
-          <h2 className="result-main-title">
-            Ton style d'apprentissage principal
-          </h2>
+        <div className="qr-main-profile">{profile}</div>
 
-          <div className="main-profile">{profile}</div>
-
-          <div className="result-stats">
-            {Object.entries(stats).map(([style, percent]) => (
-              <div key={style} className="result-stat-card">
-                <div className="stat-label">{style}</div>
-                <div className="stat-percent">{percent}%</div>
-              </div>
-            ))}
-          </div>
-
-          <button className="next-btn" onClick={handleSaveAndLogout}>
-            Sauvegarder et terminer la session
-          </button>
+        <div className="qr-stats">
+          {Object.entries(stats).map(([style, percent]) => (
+            <div key={style} className="qr-stat">
+              <span className="qr-stat-label">{style}</span>
+              <span className="qr-stat-value">{percent}%</span>
+            </div>
+          ))}
         </div>
+
+        <button className="qr-save-btn" onClick={handleSaveAndLogout}>
+          Sauvegarder et quitter
+        </button>
+
+        <button className="qr-logout-btn" onClick={onLogout}>
+          Se déconnecter
+        </button>
       </div>
     </div>
   );

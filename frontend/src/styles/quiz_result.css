@@ -1,0 +1,121 @@
+/* ================= BASE ================= */
+.qr-container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ================= CARD ================= */
+.qr-card {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 36px 32px;
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.12);
+  text-align: center;
+}
+
+/* ================= TITLES ================= */
+.qr-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.qr-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  margin-bottom: 28px;
+}
+
+/* ================= MAIN PROFILE ================= */
+.qr-main-profile {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 28px;
+}
+
+/* ================= STATS ================= */
+.qr-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.qr-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 14px;
+}
+
+.qr-stat-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.qr-stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+/* ================= BUTTONS ================= */
+.qr-save-btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(90deg, #6366f1, #3b82f6);
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.qr-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(59, 130, 246, 0.3);
+}
+
+.qr-logout-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #475569;
+  cursor: pointer;
+}
+
+.qr-logout-btn:hover {
+  background: #f1f5f9;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 480px) {
+  .qr-card {
+    padding: 28px 20px;
+  }
+
+  .qr-title {
+    font-size: 24px;
+  }
+}

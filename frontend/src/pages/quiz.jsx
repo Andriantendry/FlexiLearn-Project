@@ -81,6 +81,8 @@ export default function Quiz() {
   const handleLogout = () => {
     localStorage.removeItem("user_id");
     navigate("/signin");
+    localStorage.clear();
+    sessionStorage.clear();
   };
 
   /* ===== Loading ===== */
@@ -106,25 +108,30 @@ export default function Quiz() {
 
   return (
     <div className="quiz-container">
-      <header className="quiz-header">
-        <img src={logo} alt="FlexiLearn" className="quiz-logo" />
-        <button className="logout-btn" onClick={handleLogout}>
-          Déconnexion
-        </button>
+      <header className="quiz-top">
+        <div className="quiz-brand">🎓 FlexiLearn</div>
+        <h1 className="quiz-title">Test de Profil d'Apprentissage</h1>
+        <p className="quiz-subtitle">
+          Répondez honnêtement à chaque question pour obtenir votre profil le
+          plus précis
+        </p>
       </header>
-
-      <div className="quiz-content">
-        <div className="quiz-card">
+      <div className="quiz-wrapper">
+        <div className="progress-card">
+          <span>
+            Question {current + 1} sur {questions.length}
+          </span>
+          <span>{Math.round(progressPercent)}%</span>
           <div className="progress-bar">
             <div
               className="progress-fill"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
+        </div>
 
-          <div className="progress-text">
-            Question {current + 1} / {questions.length}
-          </div>
+        <div className="quiz-card">
+          <span className="question-badge">Question {current + 1}</span>
 
           <h2 className="question">{q?.Question}</h2>
 
@@ -137,18 +144,16 @@ export default function Quiz() {
                 }`}
                 onClick={() => handleSelect(letter)}
               >
-                <div
-                  className={`custom-radio ${
-                    answers[current + 1] === letter ? "selected" : ""
-                  }`}
-                />
+                <div className="option-icon">{letter}</div>
                 <div className="option-text">{q?.[`Option_${letter}`]}</div>
               </div>
             ))}
           </div>
 
           <button className="next-btn" onClick={handleNext}>
-            {current === questions.length - 1 ? "Voir mon résultat" : "Suivant"}
+            {current === questions.length - 1
+              ? "Voir mon résultat"
+              : "Suivant →"}
           </button>
         </div>
       </div>
