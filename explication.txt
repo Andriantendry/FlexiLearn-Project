@@ -1,0 +1,27 @@
+
+------------ Dev dans les containers ------------
+        cd sur le dossier pcp FlexiLearn-Project
+            docker-compose up 
+                --> pour lancer les services (via des images déjà existante ou crée (build) automatiquement des images si il n'y en a pas encore )
+                : se connecter à internet seulement pour la première fois 
+                
+                dans le navigateur:
+                http://localhost:5173/ pour voir l'app (frontend)
+                http://localhost:8000/ pour voir l'app (backend)
+            
+            docker-compose up --build
+                --> relancer les sercies après avoir modifié des dépendance et de configuration comme requirements.txt, vite.config.js ...
+                    : pour que les nouvelles dependances et config soient prise en compte   
+                    : tjr connecter à internet quand on build
+                après modif dependances ou config, tjr ` docker-compose down ` avant  la commande de lancement
+            
+            une fois lancé, 
+                -on peut se deconnecter à internet,
+                -modifier les codes dans editeur de text ou IDE
+                -juste ctrl + S et ça reload en frontend 
+                -F5 (actualisation) après ctrl + S en backend pour reload
+
+            docker-compose down 
+                --> cas d'ajoutd de nouvelle dépendance, réinitialisation l'environnement sans perdre les données persistantes (comme la base de données).
+            docker-compose down -v (rare) 
+                --> en cas ou vous devez vrm réinitialiser la base de données 
