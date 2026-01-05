@@ -26,7 +26,7 @@ export default function QuizResult({ result, answers, onLogout }) {
 
     try {
       const res = await fetch(
-        "http://localhost:8000/user/enregistrement des résultats",
+        "http://localhost:8000/user/save-results",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -1,17 +1,19 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 import pickle
-from typing import Dict
+from pathlib import Path
 from schemas import QuizInput
 
 
 router = APIRouter()
 
 # Charger modèle et encoders au démarrage
-with open("routes/model.pkl", "rb") as f:
+BASE_DIR = Path(__file__).resolve().parent
+
+with open(BASE_DIR / "model.pkl", "rb") as f:
     model = pickle.load(f)
 
-with open("routes/encoders.pkl", "rb") as f:
+with open(BASE_DIR / "encoders.pkl", "rb") as f:
     encoders = pickle.load(f)
 
 

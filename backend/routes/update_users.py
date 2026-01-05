@@ -10,7 +10,7 @@ router = APIRouter(
     tags=["update_users"]
 )
 
-@router.post("/enregistrement des résultats")
+@router.post("/save-results")
 
 def update_user(data: UserUpdate, db: Session = Depends(get_db)):
     profile = db.query(Profile).filter(Profile.id == data.id).first()

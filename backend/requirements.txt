@@ -1,9 +1,9 @@
 fastapi
-uvicorn
-psycopg2
+uvicorn[standard]
+psycopg2-binary
 sqlalchemy
 python-dotenv
-passlib
-typing
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 pandas
-scikit-learn
+scikit-learn==1.7.2
