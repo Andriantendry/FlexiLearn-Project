@@ -7,7 +7,12 @@ from utils.hashing import hash_password
 from routes import users
 from routes import predict
 from routes import update_users
+import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s - %(name)s - %(message)s"
+)
 app = FastAPI()
 
 app.add_middleware(
