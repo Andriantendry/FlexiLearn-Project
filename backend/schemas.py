@@ -7,7 +7,7 @@ class QuizInput(BaseModel):
 class UserSchema(BaseModel):
     username : str 
     email : str 
-    password : str 
+    password : str
     
 class UserLoginSchema(BaseModel):
     email : str

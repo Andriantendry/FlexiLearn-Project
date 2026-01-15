@@ -5,6 +5,7 @@ import SigninPage from "./pages/signin.jsx";
 import Quiz from "./pages/quiz.jsx";
 import Home from "./pages/home.jsx";
 import QuizResult from "./pages/quiz_result.jsx";
+import ChatPage from "./pages/chat.jsx";
 function App() {
   return (
     <Router>
@@ -14,6 +15,7 @@ function App() {
         <Route path="/signin" element={<SigninPage />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/quiz_result" element={<QuizResult />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Routes>
     </Router>
   );
