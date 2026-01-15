@@ -36,12 +36,3 @@ app.include_router(update_users.router)
 
 
 
-#Au debut (tsy mety)
-"""
-@app.post("/signup")
-async def signup(user:UserSchema):
-    #data = await request.json()  #si donnée brute ,request en parametre
-    print("Reçu :", user.password)
-    mdp = hash_password(user.password)
-    return {"status": "ok", "received": mdp }
-"""
