@@ -14,6 +14,7 @@ body {
   align-items: center;
   background: #f4f7fb;
   font-family: "Inter", sans-serif;
+  background-image: url("../assets/images/background.png");
 }
 
 .chat-wrapper {
@@ -51,8 +52,8 @@ body {
 }
 
 .header-icon {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 25px;
 }
 
 .chat-window {
@@ -116,7 +117,7 @@ body {
 .send-icon {
   cursor: pointer;
   font-size: 20px;
-  color: #7f7ab1 ;
+  color: #7f7ab1;
 }
 
 .chat-input input {

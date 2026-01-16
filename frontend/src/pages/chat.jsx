@@ -1,7 +1,7 @@
 import "../styles/chat.css";
 import React, { useState, useEffect, useRef } from "react";
+import human from "../assets/icones/person.png";
 import robot from "../assets/images/logo.png";
-import human from "../assets/images/logo.png";
 
 const botMessages = [
   "Bonjour, comment puis-je vous aider aujourd'hui ?",
@@ -58,6 +58,7 @@ export default function ChatPage() {
 
         <div className="header-right">
           <span>Connecté</span>
+
           <img src={robot} className="header-icon" />
         </div>
       </div>
