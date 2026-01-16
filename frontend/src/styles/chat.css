@@ -14,7 +14,11 @@ body {
   align-items: center;
   background: #f4f7fb;
   font-family: "Inter", sans-serif;
-  background-image: url("../assets/images/background.png");
+ 
+}
+
+.page-chat{
+ background-image: url("../assets/images/background.png");
 }
 
 .chat-wrapper {
