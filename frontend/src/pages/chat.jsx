@@ -50,11 +50,11 @@ export default function ChatPage() {
   const handleReco = () => {
     console.log("Recommandation affichée !");
   };
-  useEffect(() => {
-    document.body.className = "page-chat";
-    return () => (document.body.className = "");
-  }, []);
 
+  useEffect(() => {
+    document.body.classList.add("page-chat");
+    return () => document.body.classList.remove("page-chat");
+  }, []);
 
   return (
     <div className="chat-wrapper">
