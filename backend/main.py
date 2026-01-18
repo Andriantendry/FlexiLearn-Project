@@ -8,12 +8,14 @@ from routes import users
 from routes import predict
 from routes import update_users
 import logging
+from routes import recommandations
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s - %(name)s - %(message)s"
 )
 app = FastAPI()
+app.include_router(recommandations.router)
 
 app.add_middleware(
     CORSMiddleware,

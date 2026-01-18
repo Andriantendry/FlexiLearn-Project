@@ -48,6 +48,11 @@ export default function QuizResult({ result, answers, onLogout }) {
     }
   };
 
+  const handleGoToChat = () => {
+    // redirige vers le chat, on peut passer le profil si besoin
+    navigate("/chat", { state: { firstTestResult: profile } });
+  };
+
   return (
     <div className="qr-container">
       <div className="qr-card">
@@ -67,6 +72,10 @@ export default function QuizResult({ result, answers, onLogout }) {
 
         <button className="qr-save-btn" onClick={handleSaveAndLogout}>
           Sauvegarder et quitter
+        </button>
+
+        <button className="qr-save-btn" onClick={handleGoToChat}>
+          Passer au Chat IA
         </button>
 
         <button className="qr-logout-btn" onClick={onLogout}>

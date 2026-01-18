@@ -55,6 +55,7 @@ export default function Quiz() {
 
   /* ===== Soumission quiz ===== */
   const submitQuiz = async () => {
+    console.log("Réponses envoyées :", answers);
     setLoading(true);
     try {
       const res = await fetch("http://localhost:8000/api/predict", {
@@ -136,7 +137,7 @@ export default function Quiz() {
           <h2 className="question">{q?.Question}</h2>
 
           <div className="options">
-            {["A", "B", "C", "D"].map((letter) => (
+            {["A", "B", "C"].map((letter) => (
               <div
                 key={letter}
                 className={`option-card ${
