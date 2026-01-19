@@ -1,27 +1,40 @@
 import "../styles/chat.css";
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import human from "../assets/icones/person.png";
 import robot from "../assets/images/logo.png";
 import questionsData from "../questions.json";
 
-export default function ChatPage({ firstTestResult }) {
+export default function ChatPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 🔹 Récupérer le style dominant du 1er test depuis la page précédente
+  const firstTestResult = location.state?.firstTestResult;
+  const dominantStyle = firstTestResult?.dominant_style || "visuel";
+
+  // 🔹 Ne garder que les questions correspondant au style prédit
+  const questions = questionsData[dominantStyle];
+
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-
-  const categories = ["visuel", "auditif", "kinesthesique"];
-  const [categoryIndex, setCategoryIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
+
+  const [userResponses, setUserResponses] = useState({
+    visuel: [],
+    auditif: [],
+    kinesthesique: []
+  });
 
   const chatEndRef = useRef(null);
 
+  // 🔹 Scroll automatique à chaque nouveau message
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // 🔹 Message de bienvenue + première question
   useEffect(() => {
-    // Message initial + première question
     setMessages([
       {
         type: "bot",
@@ -30,116 +43,74 @@ export default function ChatPage({ firstTestResult }) {
       },
       {
         type: "bot",
-        text: questionsData[categories[0]][0].question
+        text: questions[0].question
       }
     ]);
   }, []);
 
-  const [userResponses, setUserResponses] = useState({
-    visuel: [],
-    auditif: [],
-    kinesthesique: []
-  });
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
- const handleSend = async () => {
-  if (!input.trim()) return;
+    // 1️⃣ Ajouter le message utilisateur
+    setMessages(prev => [...prev, { type: "user", text: input }]);
 
-  const currentCategory = categories[categoryIndex];
-
-  // 1️⃣ Ajouter le message utilisateur
-  setMessages(prev => [...prev, { type: "user", text: input }]);
-
-  // 2️⃣ Créer les réponses mises à jour
-  const newResponses = {
-    ...userResponses,
-    [currentCategory]: [...userResponses[currentCategory], input]
-  };
-  setUserResponses(newResponses);
-
-  // 3️⃣ Préparer la prochaine question
-  let nextQuestionIndex = questionIndex + 1;
-  let nextCategoryIndex = categoryIndex;
-
-  if (nextQuestionIndex >= questionsData[currentCategory].length) {
-    nextCategoryIndex += 1;
-    nextQuestionIndex = 0;
-  }
-
-  // 4️⃣ Afficher prochaine question ou message final
-  if (nextCategoryIndex < categories.length) {
-    const nextQuestion =
-      questionsData[categories[nextCategoryIndex]][nextQuestionIndex].question;
-    setTimeout(() => {
-      setMessages(prev => [...prev, { type: "bot", text: nextQuestion }]);
-      setQuestionIndex(nextQuestionIndex);
-      setCategoryIndex(nextCategoryIndex);
-    }, 500);
-  } else {
-    // Dernière question terminée
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        { type: "bot", text: "Merci pour vos réponses ! Génération de vos recommandations..." }
-      ]);
-    }, 500);
-
-    // 🔹 Calculer les scores en % pour Gemini
-    const calculateScores = (responses) => {
-      const result = { visuel: 0, auditif: 0, kine: 0 };
-      const total = Object.values(responses).reduce((sum, arr) => sum + arr.length, 0);
-      if (total === 0) return result;
-      result.visuel = Math.round((responses.visuel?.length || 0) / total * 100);
-      result.auditif = Math.round((responses.auditif?.length || 0) / total * 100);
-      result.kine = Math.round((responses.kinesthesique?.length || 0) / total * 100);
-      return result;
+    // 2️⃣ Ajouter la réponse dans le style correspondant
+    const newResponses = {
+      ...userResponses,
+      [dominantStyle]: [...userResponses[dominantStyle], input]
     };
+    setUserResponses(newResponses);
 
-    const finalScores = calculateScores(newResponses);
+    // 3️⃣ Afficher la prochaine question ou terminer
+    const nextIndex = questionIndex + 1;
 
-    const payload = {
-      user_answers: newResponses,
-      style_result: finalScores
-    };
+    if (nextIndex < questions.length) {
+      setTimeout(() => {
+        setMessages(prev => [
+          ...prev,
+          { type: "bot", text: questions[nextIndex].question }
+        ]);
+        setQuestionIndex(nextIndex);
+      }, 500);
+    } else {
+      // 🔹 Toutes les questions du style sont terminées
+      setTimeout(() => {
+        setMessages(prev => [
+          ...prev,
+          { type: "bot", text: "Merci pour vos réponses ! Génération de vos recommandations..." }
+        ]);
+      }, 500);
 
-    console.log("Payload envoyé au backend :", JSON.stringify(payload, null, 2));
+      // 🔹 Préparer le payload pour le backend
+      const payload = {
+        user_answers: newResponses,
+        style_result: { [dominantStyle]: newResponses[dominantStyle].length * 10 }
+      };
 
-    // 5️⃣ Appel backend
-    try {
-      const response = await fetch("http://localhost:8000/recommendation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      try {
+        const response = await fetch("http://localhost:8000/recommendation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
 
-      if (!response.ok) {
-        console.error("Erreur API :", response.statusText);
-        return;
+        if (!response.ok) {
+          console.error("Erreur API :", response.statusText);
+          return;
+        }
+
+        const data = await response.json();
+
+        // 🔹 Redirection vers la page recommandations
+        navigate("/recommandation", { state: { recommendationsData: data } });
+      } catch (error) {
+        console.error("Erreur backend :", error);
       }
-
-      const data = await response.json();
-      console.log("Recommandations Gemini reçues :", data);
-
-      // 6️⃣ Redirection vers page recommandations
-      navigate("/recommandation", { state: { recommendationsData: data } });
-    } catch (error) {
-      console.error("Erreur lors de l'appel backend :", error);
     }
-  }
 
-  // 7️⃣ Vider l'input
-  setInput("");
-};
-
-
-  const handleReco = () => {
-    // Si l'utilisateur clique sur "Voir recommandation" manuellement
-    navigate("/recommandation", { state: { recommendationsData: null } });
+    // 4️⃣ Vider l'input
+    setInput("");
   };
-
-  useEffect(() => {
-    document.body.classList.add("page-chat");
-    return () => document.body.classList.remove("page-chat");
-  }, []);
 
   return (
     <div className="chat-wrapper">
@@ -162,8 +133,13 @@ export default function ChatPage({ firstTestResult }) {
       </div>
 
       <div className="chat-input">
-        {categoryIndex >= categories.length ? (
-          <button className="reco-btn" onClick={handleReco}>
+        {questionIndex >= questions.length ? (
+          <button
+            className="reco-btn"
+            onClick={() =>
+              navigate("/recommandation", { state: { recommendationsData: null } })
+            }
+          >
             Voir recommandation
           </button>
         ) : (
@@ -174,7 +150,9 @@ export default function ChatPage({ firstTestResult }) {
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleSend()}
             />
-            <span className="send-icon" onClick={handleSend}>➤</span>
+            <span className="send-icon" onClick={handleSend}>
+              ➤
+            </span>
           </div>
         )}
       </div>

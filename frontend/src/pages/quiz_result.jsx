@@ -49,9 +49,9 @@ export default function QuizResult({ result, answers, onLogout }) {
   };
 
   const handleGoToChat = () => {
-    // redirige vers le chat, on peut passer le profil si besoin
-    navigate("/chat", { state: { firstTestResult: profile } });
-  };
+  // redirige vers le chat, on passe un objet avec dominant_style
+  navigate("/chat", { state: { firstTestResult: { dominant_style: profile.toLowerCase() } } });
+};
 
   return (
     <div className="qr-container">

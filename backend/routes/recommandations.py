@@ -1,39 +1,43 @@
 import os
 import json
 import requests
-from fastapi import FastAPI, APIRouter
-from pydantic import BaseModel
-from typing import Dict, List
+from fastapi import APIRouter
+from schemas import RecommendationRequest
 
-app = FastAPI()
 router = APIRouter()
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 API_URL = "https://api.generativeai.googleapis.com/v1beta2/models/text-bison-001:generateText"
 
 
-# --------- MODELE ---------
-class RecommendationRequest(BaseModel):
-    user_answers: Dict[str, List[str]]
-    style_result: Dict[str, int]
-
-
-# --------- FALLBACK METHODES ---------
-METHODS_BY_STYLE = {
+# ---------- MÉTHODES ULTRA PERSONNALISÉES (FALLBACK SOLIDE) ----------
+PERSONALIZED_METHODS = {
     "visuel": [
-        "Faire des schémas et cartes mentales",
-        "Utiliser des images et des couleurs",
-        "Regarder des vidéos explicatives"
+        "Transforme chaque leçon en carte mentale colorée : une couleur = une idée clé. "
+        "Utilise des flèches, symboles et dessins simples pour relier les concepts.",
+
+        "Résume tes cours sous forme de tableaux ou schémas visuels plutôt que du texte. "
+        "Plus tu vois la structure, plus tu mémorises vite.",
+
+        "Privilégie les vidéos avec animations, graphiques ou démonstrations visuelles. "
+        "Après chaque vidéo, recrée le schéma de mémoire."
     ],
     "auditif": [
-        "Écouter des explications audio",
-        "Répéter à voix haute",
-        "Discuter avec quelqu’un"
+        "Explique les notions à voix haute comme si tu enseignais à quelqu’un. "
+        "La verbalisation renforce fortement ta mémorisation.",
+
+        "Enregistre-toi en train de résumer tes cours et réécoute-les pendant des moments calmes "
+        "(marche, transport, repos).",
+
+        "Apprends en dialoguant : pose des questions, débat, reformule oralement ce que tu viens d’apprendre."
     ],
     "kinesthesique": [
-        "Apprendre en pratiquant",
-        "Faire des exercices concrets",
-        "Bouger ou manipuler"
+        "Apprends par l’action : applique immédiatement ce que tu étudies à travers des exercices ou mini-projets.",
+
+        "Associe chaque notion à un geste, un mouvement ou une manipulation concrète "
+        "pour ancrer l’information dans le corps.",
+
+        "Travaille en sessions courtes et actives : écris, bouge, manipule, teste au lieu de rester passif."
     ]
 }
 
@@ -41,14 +45,14 @@ METHODS_BY_STYLE = {
 @router.post("/recommendation")
 def get_recommendation(payload: RecommendationRequest):
 
-    # ---------- 1️⃣ SOURCE DE VÉRITÉ ----------
+    # ---------- 1️⃣ SOURCE DE VÉRITÉ : 1ER TEST ----------
     final_scores = {
         "visuel": payload.style_result.get("visuel", 0),
         "auditif": payload.style_result.get("auditif", 0),
         "kinesthesique": payload.style_result.get("kine", 0),
     }
 
-    # sécurité si test cassé
+    # sécurité si jamais le test est vide
     if sum(final_scores.values()) == 0:
         final_scores = {
             "visuel": 40,
@@ -58,16 +62,21 @@ def get_recommendation(payload: RecommendationRequest):
 
     dominant_style = max(final_scores, key=final_scores.get)
 
-    # ---------- 2️⃣ GEMINI (OPTIONNEL) ----------
-    methods = METHODS_BY_STYLE[dominant_style]
+    # ---------- 2️⃣ MÉTHODES PAR DÉFAUT ----------
+    methods = PERSONALIZED_METHODS[dominant_style]
 
+    # ---------- 3️⃣ GEMINI (ENRICHISSEMENT, PAS OBLIGATOIRE) ----------
     if API_KEY:
         prompt = f"""
-Tu es un expert en pédagogie.
-Style dominant : {dominant_style}
+Tu es un expert en pédagogie et neurosciences.
+Profil d’apprentissage dominant : {dominant_style}
 
-Retourne UNIQUEMENT une liste JSON de 3 méthodes adaptées.
-Exemple :
+Propose EXACTEMENT 3 méthodes d’apprentissage :
+- très concrètes
+- adaptées à ce profil
+- bien détaillées (1–2 phrases chacune)
+
+Retourne UNIQUEMENT un JSON :
 ["méthode 1", "méthode 2", "méthode 3"]
 """
 
@@ -81,7 +90,7 @@ Exemple :
                 json={
                     "prompt": prompt,
                     "temperature": 0.6,
-                    "maxOutputTokens": 200
+                    "maxOutputTokens": 300
                 },
                 timeout=10
             )
@@ -90,18 +99,15 @@ Exemple :
             content = response.json()["candidates"][0]["content"]
             parsed = json.loads(content)
 
-            if isinstance(parsed, list) and len(parsed) >= 2:
+            if isinstance(parsed, list) and len(parsed) == 3:
                 methods = parsed
 
         except Exception:
-            pass  # fallback auto
+            pass  # fallback conservé, aucun crash
 
-    # ---------- 3️⃣ REPONSE FINALE ----------
+    # ---------- 4️⃣ RÉPONSE FINALE ----------
     return {
         "dominant_style": dominant_style,
         "final_style_percent": final_scores,
         "methods": methods
     }
-
-
-app.include_router(router)
