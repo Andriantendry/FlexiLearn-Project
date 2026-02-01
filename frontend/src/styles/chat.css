@@ -65,6 +65,7 @@ body.page-chat {
   overflow-y: auto;
 }
 
+/* Messages */
 .msg-row {
   display: flex;
   margin-bottom: 14px;
@@ -92,6 +93,7 @@ body.page-chat {
   padding: 12px 16px;
   border-radius: 16px;
   font-size: 15px;
+  line-height: 1.5;
 }
 
 .bubble.bot {
@@ -104,39 +106,84 @@ body.page-chat {
   border-bottom-left-radius: 4px;
 }
 
+/* Messages spéciaux (chargement, erreur, succès) */
+.bubble.bot.loading {
+  background: #fff3cd;
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+.bubble.bot.error {
+  background: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+.bubble.bot.success {
+  background: #d4edda;
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+
+/* Zone de saisie */
 .chat-input {
   padding: 14px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
   border-top: 1px solid #eee;
+  background: white;
 }
 
 .input-box {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  background: #f9f9f9;
+  outline: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-box input:focus {
+  border-color: #7f7ab1;
+  box-shadow: 0 0 0 2px rgba(127, 122, 177, 0.1);
+  background: white;
+}
+
+.input-box input:disabled {
+  background: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .send-icon {
   cursor: pointer;
   font-size: 20px;
   color: #7f7ab1;
+  transition: all 0.3s ease;
+  padding: 8px;
+  border-radius: 50%;
 }
 
-.chat-input input {
-  width: 260px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: transparent;
-  outline: none;
-  font-size: 14px;
+.send-icon:hover {
+  background: rgba(127, 122, 177, 0.1);
+  transform: scale(1.1);
 }
 
-.chat-input input:focus {
-  border-color: white;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+.send-icon:active {
+  transform: scale(0.95);
 }
 
+/* Boutons */
 .chat-input button {
   padding: 12px 20px;
   background: #5f9cff;
@@ -144,6 +191,19 @@ body.page-chat {
   border-radius: 10px;
   color: white;
   cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.chat-input button:hover {
+  background: #4a8ae8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(95, 156, 255, 0.3);
+}
+
+.chat-input button:active {
+  transform: translateY(0);
 }
 
 .reco-btn {
@@ -153,9 +213,144 @@ body.page-chat {
   border-radius: 14px;
   color: white;
   font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
 }
 
+.reco-btn:hover {
+  background: #6a5f9c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(127, 122, 177, 0.3);
+}
+
+/* Bouton de réessai */
+.retry-btn {
+  padding: 10px 20px;
+  background: #ffc107;
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.retry-btn:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.retry-btn:active {
+  transform: translateY(0);
+}
+
+/* Zone de chargement de génération */
+.generating-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 14px;
+  width: 100%;
+}
+
+.generating-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Animation du spinner de chargement */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* États de chargement dans la fenêtre */
+.loading-screen,
+.error-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+}
+
+.loading-screen p {
+  font-size: 16px;
+  color: #666;
+  margin: 20px 0;
+}
+
+.error-screen p {
+  color: #dc3545;
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.error-screen button {
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  background: #007bff;
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.error-screen button:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Bouton de déconnexion dans le header */
+.header-right button {
+  padding: 8px 16px;
+  margin-left: 10px;
+  background: #dc3545;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.header-right button:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Animations */
 @keyframes slideRight {
   from {
     transform: translateX(80px);
@@ -175,5 +370,73 @@ body.page-chat {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animation pour les messages de chargement */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Scrollbar personnalisée */
+.chat-window::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-window::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.chat-window::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.chat-window::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chat-wrapper {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .bubble {
+    max-width: 75%;
+  }
+
+  .header-title {
+    font-size: 16px;
+  }
+
+  .header-right {
+    font-size: 12px;
+  }
+
+  .header-icon {
+    width: 25px;
+    height: 20px;
   }
 }

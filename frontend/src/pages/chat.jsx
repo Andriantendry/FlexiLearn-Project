@@ -18,6 +18,8 @@ export default function ChatPage() {
   const [quizFinished, setQuizFinished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [generatingReco, setGeneratingReco] = useState(false);
+  const [sendError, setSendError] = useState(null);
 
   const chatEndRef = useRef(null);
 
@@ -101,11 +103,23 @@ export default function ChatPage() {
   }, [profile, sessionId]);
 
   const handleSend = async () => {
-    if (!input.trim() || quizFinished) return;
+    if (!input.trim() || quizFinished || generatingReco) return;
 
     const userMessage = input;
     setMessages((prev) => [...prev, { type: "user", text: userMessage }]);
     setInput("");
+    setSendError(null);
+
+    // Si c'est la dernière question, afficher le chargement
+    const isLastQuestion = currentStep === totalSteps;
+    
+    if (isLastQuestion) {
+      setGeneratingReco(true);
+      setMessages((prev) => [
+        ...prev,
+        { type: "bot", text: "⏳ Génération de vos recommandations personnalisées en cours..." },
+      ]);
+    }
 
     try {
       const res = await fetch("http://localhost:8000/chat/answer", {
@@ -125,23 +139,60 @@ export default function ChatPage() {
       const data = await res.json();
 
       if (data.question) {
+        // Question suivante
         setMessages((prev) => [...prev, { type: "bot", text: data.question }]);
         setCurrentStep(data.step);
         setTotalSteps(data.total);
       } else if (data.recommendations) {
+        // Recommandations prêtes
         setQuizFinished(true);
-        setMessages((prev) => [
-          ...prev,
-          { type: "bot", text: "✅ Quiz terminé ! Appuyez sur 'Voir recommandations'." },
-        ]);
+        setGeneratingReco(false);
+        
+        // Remplacer le message de chargement par le message de succès
+        setMessages((prev) => {
+          const filtered = prev.filter(msg => !msg.text.includes("⏳ Génération"));
+          return [
+            ...filtered,
+            { type: "bot", text: "✅ Quiz terminé ! Vos recommandations sont prêtes. Appuyez sur 'Voir recommandations'." },
+          ];
+        });
+        
         localStorage.setItem("recommendations", data.recommendations);
       }
     } catch (err) {
       console.error("Erreur:", err);
-      setMessages((prev) => [
-        ...prev,
-        { type: "bot", text: "Erreur lors de l'envoi. Réessayez." },
-      ]);
+      setGeneratingReco(false);
+      
+      // Gestion d'erreur spécifique pour les erreurs 503
+      let errorMessage = "❌ Erreur lors de l'envoi. Veuillez réessayer.";
+      
+      if (err.message.includes('503') || err.message.includes('overloaded')) {
+        errorMessage = "⚠️ Le service est temporairement surchargé. Veuillez patienter quelques instants et réessayer.";
+        setSendError("overloaded");
+      } else if (err.message.includes('500')) {
+        errorMessage = "⚠️ Une erreur serveur s'est produite. Veuillez réessayer dans quelques instants.";
+        setSendError("server_error");
+      } else {
+        setSendError("general");
+      }
+      
+      // Remplacer le message de chargement par l'erreur
+      setMessages((prev) => {
+        const filtered = prev.filter(msg => !msg.text.includes("⏳ Génération"));
+        return [
+          ...filtered,
+          { type: "bot", text: errorMessage },
+        ];
+      });
+    }
+  };
+
+  const handleRetry = () => {
+    setSendError(null);
+    // Relancer l'envoi avec la dernière réponse si disponible
+    const lastUserMessage = messages.filter(m => m.type === "user").pop();
+    if (lastUserMessage) {
+      setInput(lastUserMessage.text);
     }
   };
 
@@ -162,13 +213,11 @@ export default function ChatPage() {
         <div className="chat-header">
           <div className="header-title">Assistant IA</div>
         </div>
-        <div className="chat-window" style={{
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center',
-          height: '100%'
-        }}>
-          <p>Chargement des questions...</p>
+        <div className="chat-window">
+          <div className="loading-screen">
+            <span className="spinner" style={{fontSize: '40px'}}>⏳</span>
+            <p>Chargement des questions...</p>
+          </div>
         </div>
       </div>
     );
@@ -180,18 +229,13 @@ export default function ChatPage() {
         <div className="chat-header">
           <div className="header-title">Erreur</div>
         </div>
-        <div className="chat-window" style={{
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center',
-          height: '100%',
-          padding: '20px'
-        }}>
-          <p style={{color: 'red', marginBottom: '20px'}}>❌ {error}</p>
-          <button onClick={() => navigate("/quiz")}>
-            Retour au quiz
-          </button>
+        <div className="chat-window">
+          <div className="error-screen">
+            <p>❌ {error}</p>
+            <button onClick={() => navigate("/quiz")}>
+              Retour au quiz
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -211,13 +255,25 @@ export default function ChatPage() {
       </div>
 
       <div className="chat-window">
-        {messages.map((msg, i) => (
-          <div key={i} className={`msg-row ${msg.type}`}>
-            {msg.type === "user" && <img src={human} className="avatar" alt="User" />}
-            {msg.type === "bot" && <img src={robot} className="avatar" alt="Bot" />}
-            <div className={`bubble ${msg.type}`}>{msg.text}</div>
-          </div>
-        ))}
+        {messages.map((msg, i) => {
+          // Déterminer la classe de style du message
+          let bubbleClass = `bubble ${msg.type}`;
+          if (msg.text.includes("⏳ Génération")) {
+            bubbleClass += " loading pulse";
+          } else if (msg.text.includes("✅")) {
+            bubbleClass += " success";
+          } else if (msg.text.includes("❌") || msg.text.includes("⚠️")) {
+            bubbleClass += " error";
+          }
+
+          return (
+            <div key={i} className={`msg-row ${msg.type}`}>
+              {msg.type === "user" && <img src={human} className="avatar" alt="User" />}
+              {msg.type === "bot" && <img src={robot} className="avatar" alt="Bot" />}
+              <div className={bubbleClass}>{msg.text}</div>
+            </div>
+          );
+        })}
         <div ref={chatEndRef} />
       </div>
 
@@ -226,6 +282,13 @@ export default function ChatPage() {
           <button className="reco-btn" onClick={handleReco}>
             Voir recommandations
           </button>
+        ) : generatingReco ? (
+          <div className="generating-box">
+            <span className="generating-text">
+              <span className="spinner">⏳</span>
+              Génération en cours...
+            </span>
+          </div>
         ) : (
           <div className="input-box">
             <input
@@ -233,11 +296,27 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={generatingReco}
             />
-            <span className="send-icon" onClick={handleSend}>
+            <span 
+              className="send-icon" 
+              onClick={handleSend}
+              style={{
+                cursor: generatingReco ? 'not-allowed' : 'pointer',
+                opacity: generatingReco ? 0.5 : 1
+              }}
+            >
               ➤
             </span>
           </div>
+        )}
+        
+        {/* Bouton de réessai en cas d'erreur */}
+        {sendError && !quizFinished && !generatingReco && (
+          <button className="retry-btn" onClick={handleRetry}>
+            <span>🔄</span>
+            <span>Réessayer</span>
+          </button>
         )}
       </div>
     </div>

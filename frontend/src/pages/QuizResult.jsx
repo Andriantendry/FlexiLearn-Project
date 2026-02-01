@@ -145,7 +145,7 @@ export default function QuizResult() {
 
         {/* Recommandations */}
         <div className="recommendations-card">
-          <h2>📋 Vos Recommandations Personnalisées</h2>
+          <h2>Vos Recommandations Personnalisées</h2>
           <div className="recommendations-content">
             {parsedRecommendations.map((section, sIdx) => (
               <div key={sIdx} className="reco-section">
@@ -183,24 +183,24 @@ export default function QuizResult() {
         {/* Actions */}
         <div className="result-actions">
           <button className="btn-secondary" onClick={handleRestart}>
-            🔄 Refaire le test
+            Refaire le test
           </button>
-          <button className="btn-primary" onClick={() => navigate("/chat")}>
-            💬 Continuer le chat
-          </button>
+          {/* <button className="btn-primary" onClick={() => navigate("/chat")}>
+            Continuer le chat
+          </button> */}
           <button className="btn-logout" onClick={handleLogout}>
-            🚪 Se déconnecter
+            Se déconnecter
           </button>
         </div>
 
         {/* Informations supplémentaires */}
         <div className="info-card">
-          <h3>💡 Que faire maintenant ?</h3>
+          <h3>Que faire maintenant ?</h3>
           <ul>
-            <li>📚 Appliquez ces recommandations dans vos études quotidiennes</li>
-            <li>🎯 Adaptez votre environnement d'apprentissage selon votre profil</li>
-            <li>📊 Suivez vos progrès et ajustez vos méthodes si nécessaire</li>
-            <li>🤝 Partagez vos stratégies avec vos enseignants ou formateurs</li>
+            <li>Appliquez ces recommandations dans vos études quotidiennes</li>
+            <li>Adaptez votre environnement d'apprentissage selon votre profil</li>
+            <li>Suivez vos progrès et ajustez vos méthodes si nécessaire</li>
+            <li>Partagez vos stratégies avec vos enseignants ou formateurs</li>
           </ul>
         </div>
       </div>
