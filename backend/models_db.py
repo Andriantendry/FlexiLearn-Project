@@ -7,23 +7,82 @@ from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 Base = declarative_base()
 
     
+# class User(Base):
+#     __tablename__ = "users"
+#     id = Column(Integer, primary_key=True, index=True)
+#     username = Column(String, index= True)
+#     email = Column(String, unique=True)
+#     password = Column(String)
+#     create_at = Column( DateTime(timezone=True),server_default=func.now())
+    
+#     profile = relationship("Profile", back_populates="user", uselist=False)
+
+# class Profile(Base):
+#     __tablename__ = "profile"
+#     id_profile = Column(Integer, primary_key=True, index=True)
+#     id = Column(Integer, ForeignKey("users.id"), nullable=False)
+#     answers = Column(JSON)
+#     profile = Column(String)
+#     statistiques = Column(JSON)
+
+#     user = relationship("User", back_populates="profile")
+
+
 class User(Base):
     __tablename__ = "users"
+
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, index= True)
-    email = Column(String, unique=True)
+    username = Column(String, index=True)
+    email = Column(String, unique=True, index=True)
     password = Column(String)
-    create_at = Column( DateTime(timezone=True),server_default=func.now())
-    
-    profile = relationship("Profile", back_populates="user", uselist=False)
+
+    create_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    profile = relationship(
+        "Profile",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan"
+    )
+
+# class Profile(Base):
+#     __tablename__ = "profiles"
+
+#     id_profile = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+#     answers = Column(JSON)              # ["A","B","C",...]
+#     profile_code = Column(String)       # "VA"
+#     statistiques = Column(JSON)         # {"Visuel": 45.2, ...}
+
+#     user = relationship("User", back_populates="profile")
 
 class Profile(Base):
-    __tablename__ = "profile"
+    __tablename__ = "profiles"
+
     id_profile = Column(Integer, primary_key=True, index=True)
-    id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # 🔹 Quiz / ML (enregistré après le quiz)
     answers = Column(JSON)
-    profile = Column(String)
-    statistiques = Column(JSON)
+    profile_code = Column(String)           # ex: "VA"
+    profil_dominant = Column(String)        # "Visuel"
+    profil_secondaire = Column(String)      # "Auditif"
+    profil_tertiaire = Column(String)       # "Kinesthésique"
+    statistiques = Column(JSON)             # {"Visuel": 45.2, ...}
+
+    # 🔹 Chat / Recommandation (enregistré après le chat)
+    chat_answers = Column(JSON, nullable=True) # réponses du chat
+    recommendation = Column(String, nullable=True)
+    # recommendation = Column(JSON, nullable=True)
+    # ex:
+    # {
+    #   "titre": "...",
+    #   "contenu": "...",
+    #   "ressources": [...]
+    # }
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     user = relationship("User", back_populates="profile")
-

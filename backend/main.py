@@ -7,15 +7,15 @@ from utils.hashing import hash_password
 from routes import users
 from routes import predict
 from routes import update_users
-import logging
 from routes import recommandations
+from routes import chat
+import logging
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s - %(name)s - %(message)s"
 )
 app = FastAPI()
-app.include_router(recommandations.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,6 +40,8 @@ def root():
 app.include_router(users.router)
 app.include_router(predict.router, prefix="/api")
 app.include_router(update_users.router)
+app.include_router(chat.router)
+app.include_router(recommandations.router)
 
 
 

@@ -1,131 +1,220 @@
 import "../styles/chat.css";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import human from "../assets/icones/person.png";
 import robot from "../assets/images/logo.png";
-import questionsData from "../questions.json";
 
 export default function ChatPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔹 Récupérer le style dominant du 1er test depuis la page précédente
-  const firstTestResult = location.state?.firstTestResult;
-  const dominantStyle = firstTestResult?.dominant_style || "visuel";
-
-  // 🔹 Ne garder que les questions correspondant au style prédit
-  const questions = questionsData[dominantStyle];
-
+  const [sessionId] = useState(() => uuidv4());
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [questionIndex, setQuestionIndex] = useState(0);
-
-  const [userResponses, setUserResponses] = useState({
-    visuel: [],
-    auditif: [],
-    kinesthesique: []
-  });
+  const [currentStep, setCurrentStep] = useState(0);
+  const [totalSteps, setTotalSteps] = useState(0);
+  const [profile, setProfile] = useState("");
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const chatEndRef = useRef(null);
 
-  // 🔹 Scroll automatique à chaque nouveau message
+  // Scroll automatique
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔹 Message de bienvenue + première question
+  // Vérification et initialisation
   useEffect(() => {
-    setMessages([
-      {
-        type: "bot",
-        text:
-          "Bonjour 🙂 Je vais vous poser quelques questions afin de mieux vous proposer des méthodes d’apprentissage."
-      },
-      {
-        type: "bot",
-        text: questions[0].question
-      }
-    ]);
-  }, []);
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    // 1️⃣ Ajouter le message utilisateur
-    setMessages(prev => [...prev, { type: "user", text: input }]);
-
-    // 2️⃣ Ajouter la réponse dans le style correspondant
-    const newResponses = {
-      ...userResponses,
-      [dominantStyle]: [...userResponses[dominantStyle], input]
-    };
-    setUserResponses(newResponses);
-
-    // 3️⃣ Afficher la prochaine question ou terminer
-    const nextIndex = questionIndex + 1;
-
-    if (nextIndex < questions.length) {
-      setTimeout(() => {
-        setMessages(prev => [
-          ...prev,
-          { type: "bot", text: questions[nextIndex].question }
-        ]);
-        setQuestionIndex(nextIndex);
-      }, 500);
-    } else {
-      // 🔹 Toutes les questions du style sont terminées
-      setTimeout(() => {
-        setMessages(prev => [
-          ...prev,
-          { type: "bot", text: "Merci pour vos réponses ! Génération de vos recommandations..." }
-        ]);
-      }, 500);
-
-      // 🔹 Préparer le payload pour le backend
-      const payload = {
-        user_answers: newResponses,
-        style_result: { [dominantStyle]: newResponses[dominantStyle].length * 10 }
-      };
-
-      try {
-        const response = await fetch("http://localhost:8000/recommendation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-          console.error("Erreur API :", response.statusText);
-          return;
-        }
-
-        const data = await response.json();
-
-        // 🔹 Redirection vers la page recommandations
-        navigate("/recommandation", { state: { recommendationsData: data } });
-      } catch (error) {
-        console.error("Erreur backend :", error);
-      }
+    const userId = localStorage.getItem("user_id");
+    if (!userId) {
+      navigate("/signin");
+      return;
     }
 
-    // 4️⃣ Vider l'input
+    // ✅ Récupérer le profil depuis location.state
+    const receivedProfile = location.state?.profile;
+    
+    console.log("Profile reçu depuis quiz:", receivedProfile);
+    console.log("Type du profile:", typeof receivedProfile);
+
+    // ✅ Validation stricte
+    if (!receivedProfile || typeof receivedProfile !== 'string') {
+      console.error("Profil invalide ou manquant, redirection vers quiz");
+      navigate("/quiz");
+      return;
+    }
+
+    setProfile(receivedProfile);
+  }, [navigate, location.state]);
+
+  // Chargement des questions
+  useEffect(() => {
+    if (!profile) return; // Attendre que le profil soit défini
+
+    const fetchStart = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log("Envoi au backend:", { 
+          session_id: sessionId, 
+          profile: profile 
+        });
+
+        const res = await fetch("http://localhost:8000/chat/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            session_id: sessionId, 
+            profile: profile  // ✅ Maintenant c'est bien une string
+          }),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Erreur serveur:", text);
+          throw new Error(`HTTP ${res.status}: ${text}`);
+        }
+
+        const data = await res.json();
+        console.log("Données reçues:", data);
+
+        setMessages([{ type: "bot", text: data.question }]);
+        setCurrentStep(data.step);
+        setTotalSteps(data.total);
+        setLoading(false);
+      } catch (err) {
+        console.error("Erreur lors du chargement:", err);
+        setError(err.message);
+        setMessages([{ 
+          type: "bot", 
+          text: "Une erreur s'est produite. Veuillez réessayer." 
+        }]);
+        setLoading(false);
+      }
+    };
+
+    fetchStart();
+  }, [profile, sessionId]);
+
+  const handleSend = async () => {
+    if (!input.trim() || quizFinished) return;
+
+    const userMessage = input;
+    setMessages((prev) => [...prev, { type: "user", text: userMessage }]);
     setInput("");
+
+    try {
+      const res = await fetch("http://localhost:8000/chat/answer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          session_id: sessionId, 
+          answer: userMessage 
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`HTTP ${res.status}: ${text}`);
+      }
+
+      const data = await res.json();
+
+      if (data.question) {
+        setMessages((prev) => [...prev, { type: "bot", text: data.question }]);
+        setCurrentStep(data.step);
+        setTotalSteps(data.total);
+      } else if (data.recommendations) {
+        setQuizFinished(true);
+        setMessages((prev) => [
+          ...prev,
+          { type: "bot", text: "✅ Quiz terminé ! Appuyez sur 'Voir recommandations'." },
+        ]);
+        localStorage.setItem("recommendations", data.recommendations);
+      }
+    } catch (err) {
+      console.error("Erreur:", err);
+      setMessages((prev) => [
+        ...prev,
+        { type: "bot", text: "Erreur lors de l'envoi. Réessayez." },
+      ]);
+    }
   };
+
+  const handleReco = () => {
+    const recommendations = localStorage.getItem("recommendations") || "";
+    navigate("/quiz-result", { state: { profile, recommendations } });
+  };
+
+  const handleLogout = () => {
+    localStorage.clear();
+    sessionStorage.clear();
+    navigate("/signin");
+  };
+
+  if (loading) {
+    return (
+      <div className="chat-wrapper">
+        <div className="chat-header">
+          <div className="header-title">Assistant IA</div>
+        </div>
+        <div className="chat-window" style={{
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          height: '100%'
+        }}>
+          <p>Chargement des questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="chat-wrapper">
+        <div className="chat-header">
+          <div className="header-title">Erreur</div>
+        </div>
+        <div className="chat-window" style={{
+          display: 'flex', 
+          flexDirection: 'column',
+          justifyContent: 'center', 
+          alignItems: 'center',
+          height: '100%',
+          padding: '20px'
+        }}>
+          <p style={{color: 'red', marginBottom: '20px'}}>❌ {error}</p>
+          <button onClick={() => navigate("/quiz")}>
+            Retour au quiz
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="chat-wrapper">
       <div className="chat-header">
-        <div className="header-title">Assistant IA</div>
+        <div className="header-title">Assistant IA - Profil {profile}</div>
         <div className="header-right">
-          <span>Connecté</span>
-          <img src={robot} className="header-icon" />
+          <span>Question {currentStep}/{totalSteps}</span>
+          <img src={robot} className="header-icon" alt="Robot" />
+          <button onClick={handleLogout} style={{marginLeft: '10px'}}>
+            Déconnexion
+          </button>
         </div>
       </div>
 
       <div className="chat-window">
         {messages.map((msg, i) => (
           <div key={i} className={`msg-row ${msg.type}`}>
-            {msg.type === "user" && <img src={human} className="avatar" />}
+            {msg.type === "user" && <img src={human} className="avatar" alt="User" />}
+            {msg.type === "bot" && <img src={robot} className="avatar" alt="Bot" />}
             <div className={`bubble ${msg.type}`}>{msg.text}</div>
           </div>
         ))}
@@ -133,22 +222,17 @@ export default function ChatPage() {
       </div>
 
       <div className="chat-input">
-        {questionIndex >= questions.length ? (
-          <button
-            className="reco-btn"
-            onClick={() =>
-              navigate("/recommandation", { state: { recommendationsData: null } })
-            }
-          >
-            Voir recommandation
+        {quizFinished ? (
+          <button className="reco-btn" onClick={handleReco}>
+            Voir recommandations
           </button>
         ) : (
           <div className="input-box">
             <input
               placeholder="Répondre..."
               value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSend()}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
             <span className="send-icon" onClick={handleSend}>
               ➤

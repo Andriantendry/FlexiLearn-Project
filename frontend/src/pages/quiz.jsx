@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/quiz.css";
-import logo from "../assets/images/logo.png";
-import QuizResult from "./quiz_result";
 
 export default function Quiz() {
   const navigate = useNavigate();
@@ -11,7 +9,6 @@ export default function Quiz() {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState(null);
 
   /* ===== Vérif connexion ===== */
   useEffect(() => {
@@ -36,7 +33,7 @@ export default function Quiz() {
 
   /* ===== Sélection réponse ===== */
   const handleSelect = (letter) => {
-    setAnswers({ ...answers, [current + 1]: letter });
+    setAnswers({ ...answers, [current + 1]: letter.toUpperCase() });
   };
 
   /* ===== Suivant / Soumission ===== */
@@ -49,41 +46,64 @@ export default function Quiz() {
     if (current < questions.length - 1) {
       setCurrent(current + 1);
     } else {
-      submitQuiz();
+      finishQuiz();
     }
   };
 
-  /* ===== Soumission quiz ===== */
-  const submitQuiz = async () => {
-    console.log("Réponses envoyées :", answers);
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:8000/api/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
+  /* ===== Fin du quiz → redirection chat ===== */
+  const finishQuiz = async () => {
+  if (Object.keys(answers).length !== 20) {
+    alert("Toutes les questions doivent être répondues (20/20)");
+    return;
+  }
+
+  const responsesArray = Array.from({ length: 20 }, (_, i) => answers[i + 1]);
+  console.log("Réponses envoyées au chat :", responsesArray);
+
+  try {
+    const popup = document.createElement("div");
+    popup.textContent = "Enregistrement de vos réponses...";
+    popup.style.cssText =
+      "position:fixed;top:30%;left:50%;transform:translateX(-50%);background-color:#2196F3;color:white;padding:15px 25px;border-radius:8px;z-index:9999;font-weight:bold;";
+    document.body.appendChild(popup);
+
+    const userId = localStorage.getItem("user_id");
+
+    const res = await fetch(`http://127.0.0.1:8000/api/predict?user_id=${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ responses: responsesArray }),
+    });
+
+    if (!res.ok) throw new Error("Erreur serveur lors de la prédiction");
+
+    const result = await res.json();
+    console.log("Profil prédit :", result.result);
+
+    popup.textContent = "✅ Profil enregistré avec succès !";
+
+    setTimeout(() => {
+      popup.remove();
+      // ✅ FIX : Envoyer uniquement le code du profil (string)
+      navigate("/chat", { 
+        state: { 
+          answers: responsesArray, 
+          profile: result.result.Profil  // ✅ Juste "VA", "AK", etc.
+        } 
       });
-
-      const data = await res.json();
-      if (res.ok && data) {
-        setResult(data);
-      } else {
-        alert("Erreur soumission");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Erreur serveur");
-    } finally {
-      setLoading(false);
-    }
-  };
+    }, 1500);
+  } catch (err) {
+    console.error(err);
+    alert("Erreur lors de l'enregistrement du profil. Réessayez.");
+  }
+};
 
   /* ===== Déconnexion ===== */
   const handleLogout = () => {
     localStorage.removeItem("user_id");
-    navigate("/signin");
     localStorage.clear();
     sessionStorage.clear();
+    navigate("/signin");
   };
 
   /* ===== Loading ===== */
@@ -92,13 +112,6 @@ export default function Quiz() {
       <div className="quiz-container">
         <div className="quiz-content">Chargement du quiz...</div>
       </div>
-    );
-  }
-
-  /* ===== AFFICHAGE RÉSULTAT ===== */
-  if (result) {
-    return (
-      <QuizResult result={result} answers={answers} onLogout={handleLogout} />
     );
   }
 
@@ -133,7 +146,6 @@ export default function Quiz() {
 
         <div className="quiz-card">
           <span className="question-badge">Question {current + 1}</span>
-
           <h2 className="question">{q?.Question}</h2>
 
           <div className="options">
@@ -153,7 +165,7 @@ export default function Quiz() {
 
           <button className="next-btn" onClick={handleNext}>
             {current === questions.length - 1
-              ? "Voir mon résultat"
+              ? "Finaliser mon test et commencer le chat"
               : "Suivant →"}
           </button>
         </div>

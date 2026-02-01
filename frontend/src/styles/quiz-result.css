@@ -1,0 +1,361 @@
+/* quiz-result.css */
+
+.result-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.result-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.result-header .brand {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.result-header h1 {
+  font-size: 2.2rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.result-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Carte du profil */
+.profile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideDown 0.5s ease-out;
+}
+
+.profile-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+}
+
+.profile-title {
+  font-size: 2rem;
+  color: #333;
+  margin: 10px 0;
+  font-weight: 700;
+}
+
+.profile-code {
+  font-size: 1.2rem;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.profile-description {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.badge-visual {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.badge-auditory {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.badge-kinesthetic {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+/* Recommandations */
+.recommendations-card {
+  background: white;
+  border-radius: 16px;
+  padding: 35px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.6s ease-out;
+}
+
+.recommendations-card h2 {
+  font-size: 1.9rem;
+  color: #2c3e50;
+  margin-bottom: 25px;
+  font-weight: 700;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 12px;
+}
+
+.recommendations-content {
+  max-height: 650px;
+  overflow-y: auto;
+  padding-right: 15px;
+}
+
+.recommendations-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.recommendations-content::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.recommendations-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  border-radius: 10px;
+}
+
+.recommendations-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #764ba2, #667eea);
+}
+
+/* Sections principales */
+.reco-section {
+  margin-bottom: 35px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.reco-section-title {
+  font-size: 1.5rem;
+  color: #667eea;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reco-section-title::before {
+  content: "▸";
+  color: #667eea;
+  font-size: 1.3rem;
+}
+
+/* Sous-sections */
+.reco-subsection {
+  margin: 20px 0;
+  padding-left: 20px;
+}
+
+.reco-subtitle {
+  font-size: 1.2rem;
+  color: #495057;
+  font-weight: 600;
+  margin: 15px 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+/* Listes */
+.reco-list {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+}
+
+.reco-list li {
+  font-size: 1rem;
+  color: #495057;
+  margin: 12px 0;
+  padding-left: 30px;
+  position: relative;
+  line-height: 1.7;
+  transition: all 0.2s ease;
+}
+
+.reco-list li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.reco-list li:hover {
+  color: #2c3e50;
+  transform: translateX(5px);
+}
+
+/* Paragraphes */
+.reco-paragraph {
+  font-size: 1rem;
+  color: #495057;
+  line-height: 1.8;
+  margin: 15px 0;
+  padding: 12px 15px;
+  background: white;
+  border-radius: 8px;
+  border-left: 3px solid #e9ecef;
+}
+
+/* Actions */
+.result-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-logout {
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+}
+
+.btn-logout {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-logout:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* Carte d'informations */
+.info-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 1s ease-out;
+}
+
+.info-card h3 {
+  font-size: 1.4rem;
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.info-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-card li {
+  font-size: 1rem;
+  color: #555;
+  margin: 10px 0;
+  padding-left: 30px;
+  position: relative;
+}
+
+.info-card li::before {
+  content: attr(data-icon);
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .result-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .profile-title {
+    font-size: 1.5rem;
+  }
+
+  .recommendations-card {
+    padding: 20px;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-logout {
+    width: 100%;
+  }
+}

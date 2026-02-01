@@ -1,15 +1,11 @@
 from pydantic import BaseModel 
-from typing import Dict, Optional
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-
-class RecommendationRequest(BaseModel):
-    user_answers: Dict[str, List[str]]
-    style_result: Dict[str, int]
-
-
+# class QuizInput(BaseModel):
+#     answers: Dict[int, str]
+    
 class QuizInput(BaseModel):
-    answers: Dict[int, str]
+    responses: List[str] 
     
 class UserSchema(BaseModel):
     username : str 
