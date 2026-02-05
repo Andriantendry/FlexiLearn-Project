@@ -14,12 +14,17 @@ export default function SignIn() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      alert("Les mots de passe ne correspondent pas ❌");
+      return;
+    }
     setLoading(true);
 
     try {
@@ -28,16 +33,7 @@ export default function SignIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
       });
-      /*
-      
-      console.log("API response:", data);
-      if (!res.ok) alert("Signup failed");
-      else alert("Signup successful!");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Server connection error");
-    }
-  };*/
+
       const data = await res.json();
       const userId = data.user_id || data.user?.id || data.id;
 
@@ -151,7 +147,32 @@ export default function SignIn() {
                 />
               </span>
             </div>
+            {/* CONFIRM PASSWORD FIELD */}
+            <label className="field-label">Confirm Password</label>
+            <div className="input-box password-box">
+              <img src={lock_icone} className="input-icon" alt="" />
 
+              <input
+                type={showPwd ? "text" : "password"}
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="off"
+              />
+              <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
+                <img
+                  src={showPwd ? eye_icone : eye_hide_icone}
+                  alt="toggle"
+                  className="pwd-icon"
+                />
+              </span>
+            </div>
+            {confirmPassword && password !== confirmPassword && (
+              <p style={{ color: "red", fontSize: "12px" }}>
+                Les mots de passe ne correspondent pas
+              </p>
+            )}
             <div className="options">
               <label>
                 <input type="checkbox" defaultChecked={false} /> Remember me

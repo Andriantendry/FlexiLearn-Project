@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database import get_db 
 from schemas import UserSchema ,UserLoginSchema
 from models_db import User
-from utils.hashing import hash_password,verify_password
+from utils.hashing import hash_password,verify_password, check_email_domain
 
 router=APIRouter(
     prefix="/user", #toutes les routes commences par /user/
@@ -14,6 +14,15 @@ router=APIRouter(
 @router.post("/signup")
 def create_user(user : UserSchema, db :Session = Depends(get_db)):
     hashed_password = hash_password(user.password)
+    
+    if not check_email_domain(user.email):
+        raise HTTPException(status_code=400, detail="Domaine email invalide")
+    
+    existing_user = db.query(User).filter(User.email == user.email).first()
+    
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email déjà utilisé")
+    
     #creer un objet pour l'utilisateur(base pydantic et models)
     db_user = User (
         username = user.username,
