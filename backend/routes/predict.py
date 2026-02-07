@@ -13,16 +13,11 @@ from models_db import Profile
 
 router = APIRouter()
 
-# =========================
 # PATHS
-# =========================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "../model_AI/model.pkl")
 ENCODER_PATH = os.path.join(BASE_DIR, "../model_AI/encoders.pkl")
-
-# =========================
 # INPUT MODEL
-# =========================
 class QuizInput(BaseModel):
     responses: List[Union[int, str]]  # accepte nombres ou lettres
 
@@ -33,14 +28,10 @@ class QuizInput(BaseModel):
             raise ValueError("Il doit y avoir exactement 20 réponses.")
         return values
 
-# =========================
 # FEATURES
-# =========================
 FEATURE_NAMES = [f"question_{i}" for i in range(1, 21)]
 
-# =========================
 # NORMALISATION
-# =========================
 LETTER_TO_INT = {"A": 1, "B": 2, "C": 3}
 
 def normalize(val):
@@ -54,9 +45,7 @@ def normalize(val):
             return LETTER_TO_INT[v]
     raise ValueError("Réponse invalide (1/2/3 ou A/B/C)")
 
-# =========================
-# PREDICTOR
-# =========================
+# PREDICTION
 class VAKPredictor:
     letters_map = {"Visuel": "V", "Auditif": "A", "Kinesthésique": "K"}
 
@@ -100,19 +89,10 @@ class VAKPredictor:
 
 predictor = VAKPredictor()
 
-# =========================
-# ENDPOINT
-# =========================
-# @router.post("/predict")
-# async def predict_endpoint(input_data: QuizInput):
-#     # Normaliser toutes les réponses en int (1,2,3)
-#     normalized_responses = [normalize(r) for r in input_data.responses]
-#     return predictor.predict(normalized_responses)
-
 @router.post("/predict")
 async def predict_endpoint(
     input_data: QuizInput,
-    user_id: int,                         # récupéré depuis token plus tard
+    user_id: int, # récupéré depuis token plus tard
     db: Session = Depends(get_db)
 ):
     # Normalisation
@@ -125,7 +105,7 @@ async def predict_endpoint(
     profile = db.query(Profile).filter(Profile.user_id == user_id).first()
 
     if profile is None:
-        # ➕ création
+        # création
         profile = Profile(
             user_id=user_id,
             answers=input_data.responses,
@@ -137,7 +117,7 @@ async def predict_endpoint(
         )
         db.add(profile)
     else:
-        # 🔁 mise à jour
+        # mise à jour
         profile.answers = input_data.responses
         profile.profile_code = result["Profil"]
         profile.profil_dominant = result["profil_dominant"]

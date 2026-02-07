@@ -46,12 +46,6 @@ class Profile(Base):
     chat_answers = Column(JSON, nullable=True) # réponses du chat
     recommendation = Column(String, nullable=True)
     # recommendation = Column(JSON, nullable=True)
-    # ex:
-    # {
-    #   "titre": "...",
-    #   "contenu": "...",
-    #   "ressources": [...]
-    # }
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

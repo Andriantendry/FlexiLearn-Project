@@ -1,9 +1,5 @@
 from pydantic import BaseModel 
 from typing import Dict, List, Optional
-
-# class QuizInput(BaseModel):
-#     answers: Dict[int, str]
-    
 class QuizInput(BaseModel):
     responses: List[str] 
     
@@ -17,11 +13,22 @@ class UserLoginSchema(BaseModel):
     password : str
 
 class UserUpdate(BaseModel):
-    id : int
-    answers: Optional[Dict[str, str]] = None
-    profile: Optional[str] = None
-    statistiques: Optional[Dict[str, float]] = None  
+    id: int
+    answers: Dict
+    profile_code: str
+    profil_dominant: str
+    profil_secondaire: str
+    profil_tertiaire: str
+    statistiques: Dict
+    recommendation: Optional[str] 
 
 class VerifyCodeSchema(BaseModel):
     email: str
     code: str
+
+class RecommendationRequest(BaseModel):
+    profile: str
+    answers: List[str]
+
+class RecommendationResponse(BaseModel):
+    recommendations: List[str]

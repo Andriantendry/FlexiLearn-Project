@@ -3,33 +3,19 @@ from pydantic import BaseModel
 from typing import List, Dict
 from google import genai
 import os
+from schemas import RecommendationRequest, RecommendationResponse
 
-# =====================================================
 # CONFIG GEMINI
-# =====================================================
 API_KEY = os.getenv("GEMINI_API_KEY")
 if not API_KEY:
     raise RuntimeError("GEMINI_API_KEY non défini")
 client = genai.Client(api_key=API_KEY)
 
-# =====================================================
-# SCHEMAS
-# =====================================================
-class RecommendationRequest(BaseModel):
-    profile: str  # Profil de l'utilisateur (ex: "V", "A", "K", "VA", etc.)
-    answers: List[str]  # Réponses données par l'utilisateur
 
-class RecommendationResponse(BaseModel):
-    recommendations: List[str]  # Liste de recommandations claires
-
-# =====================================================
 # ROUTER
-# =====================================================
 router = APIRouter(prefix="/recommendation", tags=["Recommandations"])
 
-# =====================================================
 # PROMPT DE GENERATION
-# =====================================================
 def build_recommendation_prompt(profile: str, answers: List[str]) -> str:
     formatted_answers = "\n".join([f"- Réponse {i+1}: {a}" for i, a in enumerate(answers)])
     return f"""
@@ -50,9 +36,7 @@ Analyse demandée :
 Réponds sous forme de liste courte, claire et concise.
 """
 
-# =====================================================
 # ENDPOINT
-# =====================================================
 @router.post("/", response_model=RecommendationResponse)
 def get_recommendations(req: RecommendationRequest):
     try:

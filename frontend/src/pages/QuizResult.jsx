@@ -114,6 +114,40 @@ export default function QuizResult() {
     navigate("/signin");
   };
 
+ const saveProfile = async () => {
+  if (!profile || !recommendations) return;
+
+  try {
+    const response = await fetch("http://localhost:8000/user/save-results", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: profile.id_profile || profile.id || 1, // assure-toi que c'est un int
+        answers: profile.answers || {},           // Dict
+        profile_code: profile.profile_code || profile,   // string
+        profil_dominant: profile.profil_dominant || "",
+        profil_secondaire: profile.profil_secondaire || "",
+        profil_tertiaire: profile.profil_tertiaire || "",
+        statistiques: profile.statistiques || {},        // Dict
+        recommendation: recommendations || ""           // string ou JSON
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("Profil et recommandations sauvegardés avec succès !");
+    } else {
+      console.error(data);
+      alert("Erreur lors de la sauvegarde du profil.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Erreur lors de la sauvegarde du profil.");
+  }
+};
+
+
+
   return (
     <div className="result-container">
       <header className="result-header">
@@ -185,9 +219,9 @@ export default function QuizResult() {
           <button className="btn-secondary" onClick={handleRestart}>
             Refaire le test
           </button>
-          {/* <button className="btn-primary" onClick={() => navigate("/chat")}>
-            Continuer le chat
-          </button> */}
+           <button className="btn-primary" onClick={saveProfile}>
+            Sauvegarder
+          </button>
           <button className="btn-logout" onClick={handleLogout}>
             Se déconnecter
           </button>
