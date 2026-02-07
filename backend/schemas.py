@@ -21,3 +21,7 @@ class UserUpdate(BaseModel):
     answers: Optional[Dict[str, str]] = None
     profile: Optional[str] = None
     statistiques: Optional[Dict[str, float]] = None  
+
+class VerifyCodeSchema(BaseModel):
+    email: str
+    code: str

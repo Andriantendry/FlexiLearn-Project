@@ -10,6 +10,9 @@ from routes import update_users
 from routes import recommandations
 from routes import chat
 import logging
+from fastapi.responses import JSONResponse
+from fastapi.requests import Request
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,7 +27,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-#  Crée les tables au démarrage(create_table_if_not_exist)
+#  Crée les tables au démarrage(create_table_if_not_exist) 
 Base.metadata.create_all(bind=engine)
 
 #a chaque fois qu'un truc se passe
@@ -35,6 +38,14 @@ def startup_event():
 @app.get("/")
 def root():
     return {"message": "FastAPI tourne bien"}
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    # Toujours renvoyer JSON, FastAPI ajoute CORS automatiquement
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+    )
 
 #**********ROUTE USER***************
 app.include_router(users.router)

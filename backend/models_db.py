@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, String, DateTime, JSON, ForeignKey
+from sqlalchemy import Integer, Column, Boolean,String, DateTime, JSON, ForeignKey
 from datetime import datetime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
@@ -23,6 +23,9 @@ class User(Base):
         uselist=False,
         cascade="all, delete-orphan"
     )
+    
+    is_verified = Column(Boolean, default=False)
+    verification_code = Column(String, nullable=True)
 
 
 class Profile(Base):

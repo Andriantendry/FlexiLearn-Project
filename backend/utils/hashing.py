@@ -1,5 +1,6 @@
 from passlib.context import CryptContext 
 import dns.resolver
+import random
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -15,10 +16,30 @@ def verify_password(plain_paswword,hashed_password):
 
 """_verfiier si le mail existe vraiment 
 """
-def check_email_domain(email: str):
-    domain = email.split("@")[1]
+import dns.resolver
+
+def check_email_domain(email: str) -> bool:
     try:
-        dns.resolver.resolve(domain, "MX")
-        return True
-    except:
+        # Vérification format basique
+        if "@" not in email:
+            return False
+
+        domain = email.split("@")[1]
+
+        # Vérifie les enregistrements MX
+        records = dns.resolver.resolve(domain, "MX")
+        return len(records) > 0
+
+    except dns.resolver.NXDOMAIN:
         return False
+    except dns.resolver.NoAnswer:
+        return False
+    except dns.resolver.Timeout:
+        return False
+    except Exception as e:
+        print("Erreur DNS:", e)
+        return False
+    
+
+def generate_4_digit_code():
+    return str(random.randint(1000, 9999))
