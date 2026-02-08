@@ -28,8 +28,8 @@ export default function ChatPage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Vérification et initialisation
-  useEffect(() => {
+   // Vérification et initialisation
+useEffect(() => {
     const userId = localStorage.getItem("user_id");
     if (!userId) {
       navigate("/signin");
@@ -269,10 +269,11 @@ export default function ChatPage() {
 
           return (
             <div key={i} className={`msg-row ${msg.type}`}>
-              {msg.type === "user" && <img src={human} className="avatar" alt="User" />}
               {msg.type === "bot" && <img src={robot} className="avatar" alt="Bot" />}
               <div className={bubbleClass}>{msg.text}</div>
+              {msg.type === "user" && <img src={human} className="avatar" alt="User" />}
             </div>
+
           );
         })}
         <div ref={chatEndRef} />
