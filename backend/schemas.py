@@ -1,5 +1,6 @@
 from pydantic import BaseModel 
 from typing import Dict, List, Optional
+from datetime import datetime
 class QuizInput(BaseModel):
     responses: List[str] 
     
@@ -32,3 +33,14 @@ class RecommendationRequest(BaseModel):
 
 class RecommendationResponse(BaseModel):
     recommendations: List[str]
+
+
+class FeedbackOut(BaseModel):
+    id_feedback: int
+    rating: int
+    category: str
+    feedback_text: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -6,6 +6,7 @@ import Quiz from "./pages/quiz.jsx";
 import Home from "./pages/home.jsx";
 import QuizResult from './pages/QuizResult';
 import ChatPage from "./pages/chat.jsx";
+import Feedback from "./pages/feedback.jsx";
 function App() {
   return (
     <Router>
@@ -17,6 +18,7 @@ function App() {
         <Route path="/quiz_result" element={<QuizResult />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/quiz-result" element={<QuizResult />} />
+        <Route path="/feedback" element={<Feedback />} />
       </Routes>
     </Router>
   );
