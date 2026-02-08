@@ -13,18 +13,18 @@ router = APIRouter(
 
 @router.post("/save-results")
 def update_user(data: UserUpdate, db: Session = Depends(get_db)):
-    profile = db.query(Profile).filter(Profile.id_profile == data.id).first()
+    profile = db.query(Profile).filter(Profile.user_id == data.id).first()
     
     if not profile:
         profile = Profile(
-            id_profile = data.id,
-            answers = data.answers,
-            profile_code = data.profile_code,
-            profil_dominant = data.profil_dominant,
-            profil_secondaire = data.profil_secondaire,
-            profil_tertiaire = data.profil_tertiaire,
-            statistiques = data.statistiques,
-            recommendation = data.recommendation
+            user_id=data.id,  
+            answers=data.answers,
+            profile_code=data.profile_code,
+            profil_dominant=data.profil_dominant,
+            profil_secondaire=data.profil_secondaire,
+            profil_tertiaire=data.profil_tertiaire,
+            statistiques=data.statistiques,
+            recommendation=data.recommendation
         )
         db.add(profile)
     else:
@@ -35,8 +35,7 @@ def update_user(data: UserUpdate, db: Session = Depends(get_db)):
         profile.profil_tertiaire = data.profil_tertiaire
         profile.statistiques = data.statistiques
         profile.recommendation = data.recommendation
-
+    
     db.commit()
     db.refresh(profile)
-
     return {"message": "Profile enregistré avec succès", "data": profile}

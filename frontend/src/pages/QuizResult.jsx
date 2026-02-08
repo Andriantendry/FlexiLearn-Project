@@ -35,74 +35,6 @@ export default function QuizResult() {
 
   const profileName = profileNames[profile] || profile;
 
-  // Fonction pour parser et structurer les recommandations
-  const parseRecommendations = (text) => {
-    const sections = [];
-    const lines = text.split('\n');
-    
-    let currentSection = null;
-    let currentSubsection = null;
-
-    lines.forEach((line) => {
-      const trimmed = line.trim();
-      if (!trimmed) return;
-
-      // Détecter les sections principales (###, nombres, ou MAJUSCULES)
-      if (trimmed.match(/^#{2,4}\s/) || 
-          trimmed.match(/^\d+\.\s*\*\*/) ||
-          trimmed.match(/^[A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜŸŒÆÇ\s]{10,}$/)) {
-        
-        if (currentSection) {
-          sections.push(currentSection);
-        }
-        
-        currentSection = {
-          title: trimmed.replace(/^#{2,4}\s*\*?\*?/, '').replace(/\*\*$/g, ''),
-          items: []
-        };
-        currentSubsection = null;
-      }
-      // Détecter sous-sections (ÉTAPE, nombres avec **)
-      else if (trimmed.match(/^(ÉTAPE|Étape)\s[A-Z]/i) || 
-               trimmed.match(/^\d+\.\s/)) {
-        
-        if (currentSection) {
-          currentSubsection = {
-            subtitle: trimmed.replace(/\*\*/g, ''),
-            points: []
-          };
-          currentSection.items.push(currentSubsection);
-        }
-      }
-      // Points de liste (·, -, •, **)
-      else if (trimmed.match(/^[·•\-\*]/)) {
-        const point = trimmed.replace(/^[·•\-\*]\s*\*?\*?/, '').replace(/\*\*/g, '');
-        
-        if (currentSubsection) {
-          currentSubsection.points.push(point);
-        } else if (currentSection) {
-          currentSection.items.push({ text: point });
-        }
-      }
-      // Texte normal
-      else {
-        if (currentSubsection && currentSubsection.points) {
-          currentSubsection.points.push(trimmed.replace(/\*\*/g, ''));
-        } else if (currentSection) {
-          currentSection.items.push({ text: trimmed.replace(/\*\*/g, '') });
-        }
-      }
-    });
-
-    if (currentSection) {
-      sections.push(currentSection);
-    }
-
-    return sections;
-  };
-
-  const parsedRecommendations = parseRecommendations(recommendations);
-
   const handleRestart = () => {
     localStorage.removeItem("recommendations");
     navigate("/quiz");
@@ -114,22 +46,22 @@ export default function QuizResult() {
     navigate("/signin");
   };
 
- const saveProfile = async () => {
-  if (!profile || !recommendations) return;
-
+const saveProfile = async () => {
   try {
+    const userId = localStorage.getItem("user_id");
+    
     const response = await fetch("http://localhost:8000/user/save-results", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        id: profile.id_profile || profile.id || 1, // assure-toi que c'est un int
-        answers: profile.answers || {},           // Dict
-        profile_code: profile.profile_code || profile,   // string
-        profil_dominant: profile.profil_dominant || "",
-        profil_secondaire: profile.profil_secondaire || "",
-        profil_tertiaire: profile.profil_tertiaire || "",
-        statistiques: profile.statistiques || {},        // Dict
-        recommendation: recommendations || ""           // string ou JSON
+        id: parseInt(userId),
+        answers: {},
+        profile_code: profile,
+        profil_dominant: profile[0] || "",
+        profil_secondaire: profile[1] || "",
+        profil_tertiaire: "",
+        statistiques: {},
+        recommendation: JSON.stringify(recommendations)
       })
     });
 
@@ -145,8 +77,6 @@ export default function QuizResult() {
     alert("Erreur lors de la sauvegarde du profil.");
   }
 };
-
-
 
   return (
     <div className="result-container">
@@ -165,15 +95,9 @@ export default function QuizResult() {
           <h2 className="profile-title">{profileName}</h2>
           <p className="profile-code">Code: {profile}</p>
           <div className="profile-description">
-            {profile.includes("V") && (
-              <span className="badge badge-visual">Visuel</span>
-            )}
-            {profile.includes("A") && (
-              <span className="badge badge-auditory">Auditif</span>
-            )}
-            {profile.includes("K") && (
-              <span className="badge badge-kinesthetic">Kinesthésique</span>
-            )}
+            {profile.includes("V") && <span className="badge badge-visual">Visuel</span>}
+            {profile.includes("A") && <span className="badge badge-auditory">Auditif</span>}
+            {profile.includes("K") && <span className="badge badge-kinesthetic">Kinesthésique</span>}
           </div>
         </div>
 
@@ -181,15 +105,14 @@ export default function QuizResult() {
         <div className="recommendations-card">
           <h2>Vos Recommandations Personnalisées</h2>
           <div className="recommendations-content">
-            {parsedRecommendations.map((section, sIdx) => (
+            {recommendations.sections.map((section, sIdx) => (
               <div key={sIdx} className="reco-section">
                 <h3 className="reco-section-title">{section.title}</h3>
                 
-                {section.items.map((item, iIdx) => {
-                  // Si c'est une sous-section avec points
-                  if (item.subtitle) {
-                    return (
-                      <div key={iIdx} className="reco-subsection">
+                {section.items.map((item, iIdx) => (
+                  <div key={iIdx}>
+                    {item.subtitle && (
+                      <div className="reco-subsection">
                         <h4 className="reco-subtitle">{item.subtitle}</h4>
                         <ul className="reco-list">
                           {item.points.map((point, pIdx) => (
@@ -197,18 +120,10 @@ export default function QuizResult() {
                           ))}
                         </ul>
                       </div>
-                    );
-                  }
-                  // Si c'est juste du texte
-                  else if (item.text) {
-                    return (
-                      <p key={iIdx} className="reco-paragraph">
-                        {item.text}
-                      </p>
-                    );
-                  }
-                  return null;
-                })}
+                    )}
+                    {item.text && <p className="reco-paragraph">{item.text}</p>}
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -219,7 +134,7 @@ export default function QuizResult() {
           <button className="btn-secondary" onClick={handleRestart}>
             Refaire le test
           </button>
-           <button className="btn-primary" onClick={saveProfile}>
+          <button className="btn-primary" onClick={saveProfile}>
             Sauvegarder
           </button>
           <button className="btn-logout" onClick={handleLogout}>

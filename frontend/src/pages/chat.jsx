@@ -157,7 +157,7 @@ export default function ChatPage() {
           ];
         });
         
-        localStorage.setItem("recommendations", data.recommendations);
+        localStorage.setItem("recommendations", JSON.stringify(data.recommendations));
       }
     } catch (err) {
       console.error("Erreur:", err);
@@ -197,9 +197,10 @@ export default function ChatPage() {
   };
 
   const handleReco = () => {
-    const recommendations = localStorage.getItem("recommendations") || "";
-    navigate("/quiz-result", { state: { profile, recommendations } });
-  };
+  const recoString = localStorage.getItem("recommendations") || "";
+  const recommendations = recoString ? JSON.parse(recoString) : null;
+  navigate("/quiz-result", { state: { profile, recommendations } });
+};
 
   const handleLogout = () => {
     localStorage.clear();

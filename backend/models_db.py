@@ -33,19 +33,14 @@ class Profile(Base):
 
     id_profile = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-
-    # 🔹 Quiz / ML (enregistré après le quiz)
     answers = Column(JSON)
     profile_code = Column(String)           # ex: "VA"
     profil_dominant = Column(String)        # "Visuel"
     profil_secondaire = Column(String)      # "Auditif"
     profil_tertiaire = Column(String)       # "Kinesthésique"
     statistiques = Column(JSON)             # {"Visuel": 45.2, ...}
-
-    # 🔹 Chat / Recommandation (enregistré après le chat)
-    chat_answers = Column(JSON, nullable=True) # réponses du chat
-    recommendation = Column(String, nullable=True)
-    # recommendation = Column(JSON, nullable=True)
+    chat_answers = Column(JSON, nullable=True)
+    recommendation = Column(JSON, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

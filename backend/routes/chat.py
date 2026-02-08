@@ -1,9 +1,10 @@
-# routes/chat.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
 from google import genai
 import os
+import json
+from fastapi.responses import JSONResponse
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 if not API_KEY:
@@ -78,26 +79,6 @@ class QuestionResponse(BaseModel):
 class FinalResponse(BaseModel):
     recommendations: str
 
-# def build_analysis_prompt(profile: str, answers: List[str]) -> str:
-#     formatted_answers = "\n".join([f"- Réponse {i+1}: {a}" for i, a in enumerate(answers)])
-#     return f"""
-# Tu es un expert en pédagogie et en styles d’apprentissage (VAK).
-
-# Profil détecté : {profile}
-
-# Réponses de l’apprenant :
-# {formatted_answers}
-
-# Analyse demandée :
-# 1. Vérifie la cohérence entre le profil et les réponses.
-# 2. Identifie les forces d’apprentissage.
-# 3. Identifie les difficultés potentielles.
-# 4. Propose une méthode d’apprentissage personnalisée.
-# 5. Donne des recommandations concrètes et applicables.
-
-# Réponds de manière claire, structurée et pédagogique.
-# """
-
 def build_analysis_prompt(profile: str, answers: list) -> str:
     formatted_answers = "\n".join([f"- Réponse {i+1}: {a}" for i, a in enumerate(answers)])
     return f"""
@@ -120,41 +101,22 @@ Analyse et recommandations demandées :
    - Conseils pratiques pour chaque étape
 5. Fournis des recommandations concrètes et applicables, sous forme de liste ou d’étapes.
 
-Réponds de manière détaillée, claire et structurée, comme dans cet exemple :
+⚠️ **IMPORTANT** : Réponds **uniquement en JSON**, avec exactement cette structure :
 
-Profil Auditif-Kinesthésique (A-K)
-1. AMBIANCE IDÉALE
-· Son : Silencieux à modéré
-· Rythme verbal : Podcasts à vitesse régulière (120-140 mots/min)
-· Fond sonore : Battements binauraux (4-8 Hz) pour la mémoire
-· À éviter : Lumières clignotantes, bruits imprévus
-
-2. ESPACE PHYSIQUE
-· Température : Tiède (22-24°C)
-· Mobilier : Chaise qui permet de bouger
-· Isolation : Écouteurs
-· Sol : Moquette/tapis pour acoustique douce
-
-3. SUPPORTS PRINCIPAUX
-· Audio : Podcasts éducatifs, livres audio
-· Interactif : Débats enregistrés
-· Papier : Cahier pour gribouiller
-
-4. MÉTHODE D'APPRENTISSAGE (3 ÉTAPES)
-ÉTAPE A - ENCODAGE
-· Écoute active ×2 en tapant un rythme
-· Répète à voix haute en marchant
-· Associe un geste physique à chaque concept
-
-ÉTAPE B - RÉCUPÉRATION ACTIVE
-· Flashcards audio : question → réponse gestuelle + verbale
-· Quiz oral chronométré en bougeant
-· Objectif : 85% de fluidité
-
-ÉTAPE C - CONSOLIDATION
-· Enseigne le sujet à voix haute en bougeant
-· Réécoute espacée : 24h puis 3 jours
-· Gym légère pendant les révisions
+{{
+  "sections": [
+    {{
+      "title": "Nom de la section",
+      "items": [
+        {{
+          "subtitle": "Sous-titre optionnel",
+          "points": ["point1", "point2", "..."]
+        }}
+      ]
+    }}
+  ]
+}}
+Ne réponds jamais en texte brut, ni en Markdown, uniquement en JSON.
 """
 
 
@@ -196,9 +158,21 @@ def answer_chat(req: AnswerRequest):
             model="gemini-3-flash-preview",
             contents=prompt
         )
-        recommendations = response.text.strip()
-        # Ici tu peux enregistrer les recommendations dans ta DB avec le profile
-        # save_profile(profile, session["answers"], recommendations)
+
+        raw_text = response.text.strip()
+
+        # Essayer de parser le JSON renvoyé par Gemini
+        try:
+            recommendations_json = json.loads(raw_text)
+        except json.JSONDecodeError:
+            # fallback si l'IA ne renvoie pas un JSON valide
+            raise HTTPException(status_code=500, detail=f"IA n'a pas renvoyé un JSON valide : {raw_text}")
+
+        # Retourne directement le JSON au frontend
+        # return JSONResponse(content=recommendations_json)
+        # Retourne le JSON wrappé dans un objet avec la clé "recommendations"
+        return JSONResponse(content={"recommendations": recommendations_json})
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur Gemini: {str(e)}")
 
