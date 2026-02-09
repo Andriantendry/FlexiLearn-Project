@@ -31,7 +31,7 @@ export default function VerifyCode() {
       localStorage.setItem("username", data.username);
 
       alert("Email confirmé !");
-      navigate("/quiz");
+      navigate("/signin");
     } else {
       alert(data.detail || "Code incorrect !");
     }

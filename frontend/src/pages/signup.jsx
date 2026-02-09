@@ -37,16 +37,14 @@ export default function SignIn() {
       const data = await res.json();
       const userId = data.user_id || data.user?.id || data.id;
 
-      if (userId) {
-        localStorage.setItem("user_id", userId);
-        alert(
-          "Compte créé avec succès ! Bienvenue sur FlexiLearn 🎉 Prêt à passer le quiz ?"
-        );
-        navigate("/quiz");
-      } else {
-        alert("Inscription réussie, mais redirection automatique impossible.");
-        navigate("/signin");
-      }
+     if(res.ok){
+      localStorage.setItem("email", data.email)
+      alert("Mail envoyé")
+      navigate('/verify-code')
+     }else{
+      alert("internal server")
+     }
+
     } catch (err) {
       console.error(err);
       alert("Erreur serveur. Réessaie dans quelques instants.");
