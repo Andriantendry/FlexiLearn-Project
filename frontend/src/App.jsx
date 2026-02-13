@@ -8,6 +8,7 @@ import QuizResult from "./pages/QuizResult";
 import ChatPage from "./pages/chat.jsx";
 import Feedback from "./pages/feedback.jsx";
 import VerifyCode from "./pages/verify_code.jsx";
+import UserPage from "./pages/user.jsx";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/signin" element={<SigninPage />} />
+        <Route path="/user-page" element={<UserPage />} />
         <Route path="/quiz" element={<Quiz />} />
         <Route path="/verify-code" element={<VerifyCode />} />
         <Route path="/quiz_result" element={<QuizResult />} />
