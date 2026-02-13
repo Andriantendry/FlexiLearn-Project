@@ -34,6 +34,7 @@ body {
   height: 80px;
   padding: 0 100px;
   display: flex;
+  color: #18534F;
   align-items: center;
   justify-content: space-between;
 }
@@ -73,19 +74,20 @@ body {
   font-size: 60px;
   max-width: 580px;
   font-weight: 800;
+  color: #18534F;
   line-height: 1.1;
 }
 
 .hero-left p {
   margin: 24px 0;
   font-size: 19px;
-  color: #4b5563;
+  color: #18534F;
   max-width: 480px;
 }
 
 .cta-btn {
   display: inline-block;
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  background: linear-gradient(135deg, #32a49c, #18534F);
   color: white;
   padding: 18px 44px;
   border-radius: 16px;
@@ -93,12 +95,13 @@ body {
   font-weight: 600;
   text-decoration: none;
   margin-top: 12px;
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 10px 25px rgba(46, 128, 137, 0.3);
   transition: transform 0.2s ease;
 }
 
 .cta-btn:hover {
   transform: translateY(-2px);
+  color: #18534F;
 }
 
 .hero-right {
@@ -134,12 +137,13 @@ body {
 .feature-card h3 {
   font-size: 18px;
   font-weight: 600;
+  color: #18534F;
   margin-bottom: 10px;
 }
 
 .feature-card p {
   font-size: 14px;
-  color: #6b7280;
+  color: #18534F;;
   line-height: 1.6;
   max-width: 300px;
 }

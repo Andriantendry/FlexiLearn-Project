@@ -42,7 +42,7 @@ body {
    ========================================== */
 
 .result-header {
-  padding: 1rem 2rem;           /* un peu moins haut */
+  padding: 1rem 2rem;           
   background: rgba(236, 248, 246, 1);
   backdrop-filter: blur(10px);
   position: sticky;
@@ -51,7 +51,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 60px;                 /* hauteur plus raisonnable */
+  height: 60px;                 
 }
 
 
@@ -65,7 +65,7 @@ body {
 }
 
 .result-header h1 {
-  font-size: 1.5rem;             /* taille moyenne, moins imposant */
+  font-size: 1.5rem;             
   font-weight: 600;
   color: black;
   margin: 0;
@@ -177,7 +177,7 @@ body {
 /* Menu Catégories */
 .categories-menu {
   background: linear-gradient(135deg, rgb(151, 195, 192), rgba(236, 248, 246, 1));
-  border-radius: var(--radius-xl);
+  border-radius: rgba(16, 185, 129, 0.4);
   padding: 1.5rem;
   box-shadow: var(--shadow-lg);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -260,7 +260,7 @@ body {
   font-weight: 600;
   position: relative;
   z-index: 1;
-  color: var(--text-primary);
+  color: #133e3c;
 }
 
 .category-btn.active .category-name,
@@ -355,7 +355,7 @@ body {
    ZONE CENTRALE - CONTENU
    ========================================== */
 
-.content-area {
+.content-right {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -647,7 +647,7 @@ body {
     flex-direction: column;
   }
 
-  .sidebar {
+  .sidebar-left {
     width: 100%;
   }
 

@@ -61,7 +61,7 @@ body {
 }
 
 .signup-left Link {
-  color: #8358f8;
+  color: #226D68;
   text-decoration: none;
   font-weight: 600;
 }
@@ -176,7 +176,7 @@ h2 {
 }
 
 .forgot-link {
-  color: #8155f8;
+  color: #226D68;
   font-weight: 500;
 }
 
@@ -186,7 +186,7 @@ h2 {
   padding: 15px;
   border: none;
   border-radius: 12px;
-  background: #8155f8;
+  background: #226D68;
   color: white;
   font-size: 17px;
   font-weight: 600;
@@ -195,7 +195,7 @@ h2 {
 }
 
 .login-btn:hover {
-  background: #6d43e2;
+  background: #174b48;
 }
 
 /* REMOVE bottom signup on right */
@@ -219,7 +219,7 @@ h2 {
 input[type="checkbox"] {
   width: 17px;
   height: 17px;
-  accent-color: #8155f8; /* Violet propre */
+  accent-color: #226D68; /* Violet propre */
   cursor: pointer;
   border-radius: 4px;
   fill: none;
