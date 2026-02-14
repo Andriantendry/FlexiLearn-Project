@@ -36,9 +36,15 @@ const UserPage = () => {
           `http://localhost:8000/get_profile/profile?user_id=${userId}`
         );
 
+        if (response.status === 404) {
+          // Profil non encore créé → quiz
+          navigate("/quiz");
+          return;
+        }
+
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.detail || "Erreur lors de la récupération des données");
+          throw new Error(errorData.detail || "Erreur serveur");
         }
 
         const data = await response.json();
@@ -56,6 +62,13 @@ const UserPage = () => {
 
     fetchUserData();
   }, [navigate]);
+
+  useEffect(() => {
+  if (!loading && userData && !profile) {
+    navigate("/quiz");
+  }
+}, [loading, userData, profile, navigate]);
+
 
   const handleLogout = () => {
     localStorage.removeItem("user_id");
