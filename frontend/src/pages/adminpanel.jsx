@@ -169,6 +169,13 @@ export default function AdminPanel() {
 
   // Fonction pour supprimer un utilisateur
   const handleDeleteUser = async (userId, username) => {
+    // Vérifier si l'utilisateur est un superadmin
+    const userToDelete = users.find(u => u.id === userId);
+    if (userToDelete && userToDelete.role === 'superadmin') {
+      alert("Impossible de supprimer un superadmin !");
+      return;
+    }
+
     const confirmation = window.confirm(
       `Êtes-vous sûr de vouloir supprimer l'utilisateur ${username} ?`
     );
@@ -195,6 +202,12 @@ export default function AdminPanel() {
 
   // Fonction pour changer le rôle d'un utilisateur
   const handleChangeRole = async (userId, currentRole, username) => {
+    // Vérifier si l'utilisateur est un superadmin
+    if (currentRole === 'superadmin') {
+      alert("Impossible de modifier le rôle d'un superadmin !");
+      return;
+    }
+
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
     const confirmation = window.confirm(
       `Voulez-vous changer le rôle de ${username} de "${currentRole}" à "${newRole}" ?`
@@ -275,18 +288,29 @@ export default function AdminPanel() {
     return true;
   });
 
-  // Filtrage des utilisateurs par profil VAK
-  const filteredUsers = users.filter(user => {
-    if (filterVAK === "Tous") return true;
-    
-    const profileMapping = {
-      "Visuel": "V",
-      "Auditif": "A",
-      "Kinesthésique": "K"
-    };
-    
-    return user.profile_type === profileMapping[filterVAK];
-  });
+  // Filtrage et tri des utilisateurs (superadmins toujours en haut)
+  const filteredUsers = users
+    .filter(user => {
+      if (filterVAK === "Tous") return true;
+      
+      const profileMapping = {
+        "Visuel": "V",
+        "Auditif": "A",
+        "Kinesthésique": "K"
+      };
+      
+      return user.profile_type === profileMapping[filterVAK];
+    })
+    .sort((a, b) => {
+      // Superadmin toujours en premier
+      if (a.role === 'superadmin' && b.role !== 'superadmin') return -1;
+      if (a.role !== 'superadmin' && b.role === 'superadmin') return 1;
+      // Admin en second
+      if (a.role === 'admin' && b.role === 'user') return -1;
+      if (a.role === 'user' && b.role === 'admin') return 1;
+      // Sinon, par date de création (plus récent en premier)
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
 
   // Pagination feedbacks
   const indexOfLastFeedback = currentPage * feedbacksPerPage;
@@ -547,8 +571,22 @@ export default function AdminPanel() {
                           {new Date(user.created_at).toLocaleDateString('fr-FR')}
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            {user.role !== 'superadmin' && (
+                          {user.role === 'superadmin' ? (
+                            <div style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '0.5rem',
+                              color: '#9CA3AF',
+                              fontSize: '0.75rem',
+                              fontStyle: 'italic'
+                            }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>
+                                lock
+                              </span>
+                              Protégé
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
                               <button 
                                 className="more-btn"
                                 onClick={() => handleChangeRole(user.id, user.role, user.username)}
@@ -562,16 +600,16 @@ export default function AdminPanel() {
                                   {user.role === 'admin' ? 'arrow_downward' : 'arrow_upward'}
                                 </span>
                               </button>
-                            )}
-                            <button 
-                              className="more-btn"
-                              onClick={() => handleDeleteUser(user.id, user.username)}
-                              title="Supprimer l'utilisateur"
-                              style={{ background: '#EF4444', color: 'white' }}
-                            >
-                              <span className="material-symbols-outlined">delete</span>
-                            </button>
-                          </div>
+                              <button 
+                                className="more-btn"
+                                onClick={() => handleDeleteUser(user.id, user.username)}
+                                title="Supprimer l'utilisateur"
+                                style={{ background: '#EF4444', color: 'white' }}
+                              >
+                                <span className="material-symbols-outlined">delete</span>
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );
