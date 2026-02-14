@@ -69,7 +69,6 @@ def get_admin_stats(
     """
     Récupère les statistiques globales
     """
-    # Vérification admin
     verify_admin(user_id, db)
     
     total_users = db.query(User).count()
@@ -78,14 +77,14 @@ def get_admin_stats(
     total_profiles = db.query(Profile).count()
     total_feedbacks = db.query(Feedback).count()
     
+    # ✅ Compter par profil dominant (première lettre du code)
     profiles_by_type = {}
-    profile_types = db.query(
-        Profile.profil_dominant, 
-        func.count(Profile.id_profile)
-    ).group_by(Profile.profil_dominant).all()
+    all_profiles = db.query(Profile).all()
     
-    for profile_type, count in profile_types:
-        profiles_by_type[profile_type] = count
+    for profile in all_profiles:
+        if profile.profile_code and len(profile.profile_code) > 0:
+            first_letter = profile.profile_code[0]  # A, V ou K
+            profiles_by_type[first_letter] = profiles_by_type.get(first_letter, 0) + 1
     
     users_by_role = {}
     role_counts = db.query(
@@ -123,7 +122,6 @@ def get_all_users(
     limit: int = 100,
     search: Optional[str] = None,
     verified_only: Optional[bool] = None,
-    role_filter: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     """
@@ -131,7 +129,7 @@ def get_all_users(
     """
     verify_admin(user_id, db)
     
-    query = db.query(User)
+    query = db.query(User).outerjoin(Profile)
     
     if search:
         query = query.filter(
@@ -142,14 +140,22 @@ def get_all_users(
     if verified_only is not None:
         query = query.filter(User.is_verified == verified_only)
     
-    if role_filter:
-        query = query.filter(User.role == role_filter)
-    
     query = query.order_by(desc(User.create_at))
     users = query.offset(skip).limit(limit).all()
     
     result = []
     for user in users:
+        # ✅ Extraire la première lettre du profile_code OU utiliser profil_dominant
+        profile_letter = None
+        if user.profile:
+            if user.profile.profile_code:
+                # Prendre la première lettre du code (ex: "AV" -> "A")
+                profile_letter = user.profile.profile_code[0]
+            elif user.profile.profil_dominant:
+                # Convertir le nom en lettre
+                mapping = {"Visuel": "V", "Auditif": "A", "Kinesthésique": "K"}
+                profile_letter = mapping.get(user.profile.profil_dominant)
+        
         user_data = {
             "id": user.id,
             "username": user.username,
@@ -158,12 +164,11 @@ def get_all_users(
             "is_verified": user.is_verified,
             "created_at": user.create_at,
             "has_profile": user.profile is not None,
-            "profile_type": user.profile.profil_dominant if user.profile else None
+            "profile_type": profile_letter  # ✅ Retourne "V", "A" ou "K"
         }
         result.append(UserResponse(**user_data))
     
     return result
-
 @router.get("/user/{target_user_id}")
 def get_user_details(
     target_user_id: int,

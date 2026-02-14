@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/adminpanel.css";
 
@@ -7,47 +7,199 @@ export default function AdminPanel() {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [filterVAK, setFilterVAK] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [profileDistribution, setProfileDistribution] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const users = [
-    {
-      id: 1,
-      initials: "JS",
-      name: "Julianne Smith",
-      email: "j.smith@edu.com",
-      vakProfile: "VISUAL",
-      status: "Active",
-      engagement: 92,
-      lastActivity: "2 mins ago",
-      color: "blue"
-    },
-    {
-      id: 2,
-      initials: "MK",
-      name: "Marcus Kane",
-      email: "m.kane@provider.net",
-      vakProfile: "AUDITORY",
-      status: "Active",
-      engagement: 65,
-      lastActivity: "14 hours ago",
-      color: "purple"
-    },
-    {
-      id: 3,
-      initials: "TR",
-      name: "Tanya Roberts",
-      email: "t.roberts@learning.org",
-      vakProfile: "KINESTHETIC",
-      status: "Offline",
-      engagement: 42,
-      lastActivity: "3 days ago",
-      color: "amber"
+  const usersPerPage = 10;
+  const adminUserId = localStorage.getItem("user_id");
+
+  // ✅ Mapping lettre -> nom complet
+  const mapLetterToProfile = (letter) => {
+    const mapping = {
+      "V": "Visual",
+      "A": "Auditory",
+      "K": "Kinesthetic"
+    };
+    return mapping[letter] || letter;
+  };
+
+  // ✅ Mapping lettre -> couleur
+  const getProfileColor = (letter) => {
+    const colors = {
+      "V": "blue",
+      "A": "purple",
+      "K": "amber"
+    };
+    return colors[letter] || "blue";
+  };
+
+  // Récupérer les statistiques
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/admin/stats?user_id=${adminUserId}`
+        );
+        
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des stats");
+        }
+        
+        const data = await response.json();
+        setStats(data);
+      } catch (err) {
+        console.error("Erreur stats:", err);
+        setError(err.message);
+      }
+    };
+
+    if (adminUserId) {
+      fetchStats();
     }
-  ];
+  }, [adminUserId]);
+
+  // Récupérer les utilisateurs
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        
+        let url = `http://localhost:8000/admin/users?user_id=${adminUserId}&limit=100`;
+        
+        if (searchQuery) {
+          url += `&search=${encodeURIComponent(searchQuery)}`;
+        }
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error("Erreur lors de la récupération des utilisateurs");
+        }
+        
+        const data = await response.json();
+        setUsers(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Erreur users:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    if (adminUserId) {
+      fetchUsers();
+    }
+  }, [adminUserId, searchQuery]);
+
+  // Récupérer la distribution des profils
+  useEffect(() => {
+    const fetchProfileDistribution = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/admin/analytics/profile-distribution?user_id=${adminUserId}`
+        );
+        
+        if (!response.ok) {
+          throw new Error("Erreur distribution");
+        }
+        
+        const data = await response.json();
+        setProfileDistribution(data);
+      } catch (err) {
+        console.error("Erreur distribution:", err);
+      }
+    };
+
+    if (adminUserId) {
+      fetchProfileDistribution();
+    }
+  }, [adminUserId]);
+
+  // Fonction pour supprimer un utilisateur
+  const handleDeleteUser = async (userId, username) => {
+    const confirmation = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer l'utilisateur ${username} ?`
+    );
+    
+    if (!confirmation) return;
+    
+    try {
+      const response = await fetch(
+        `http://localhost:8000/admin/user/${userId}?user_id=${adminUserId}`,
+        { method: 'DELETE' }
+      );
+      
+      if (!response.ok) {
+        throw new Error("Erreur lors de la suppression");
+      }
+      
+      setUsers(users.filter(u => u.id !== userId));
+      alert("Utilisateur supprimé avec succès");
+    } catch (err) {
+      console.error("Erreur:", err);
+      alert("Erreur lors de la suppression");
+    }
+  };
+
+  // Fonction pour obtenir les initiales
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // ✅ Filtrage côté frontend par profil
+  const filteredUsers = users.filter(user => {
+    if (filterVAK === "All") return true;
+    
+    const profileMapping = {
+      "Visual": "V",
+      "Auditory": "A",
+      "Kinesthetic": "K"
+    };
+    
+    return user.profile_type === profileMapping[filterVAK];
+  });
+
+  // Pagination
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+  if (!adminUserId) {
+    return (
+      <div className="admin-panel">
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          <h2>Accès refusé</h2>
+          <p>Vous devez être connecté en tant qu'administrateur.</p>
+          <button onClick={() => navigate("/signin")}>Se connecter</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading && !stats) {
+    return (
+      <div className="admin-panel">
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          <p>Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-panel">
       <div className="admin-container">
-        {/* Sidebar */}
+        {/* Sidebar - identique */}
         <aside className="admin-sidebar">
           <div className="sidebar-logo">
             <div className="logo-icon">
@@ -92,11 +244,11 @@ export default function AdminPanel() {
           <div className="sidebar-user">
             <img 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVrxh2tZPtW0zjRnvfcXZelJX0rCEee1HbEJIE8YBMAGFbei05F1SDg5b6IX9F5ZSpcp0EA_gfstgayz8YJydcW2GGVPOKkPbRt5ww5y1htZGNxZxlrtribsLkFJ7isb_ztVd_XVBfj6HHxuDvPnJCJgtKOTgCw2KwceZ-83OuZRVwgU6lEOotahW--q9xYrMw9jzkihvZokxsF8X2Zyyt2OsbzpGTp_hFG62FhtnObOqr9GdVSf7YsR5hcbKcl4-liu2b4ryAWDY" 
-              alt="Alex Morgan"
+              alt="Admin"
               className="user-avatar"
             />
             <div className="user-info">
-              <p className="user-name">Alex Morgan</p>
+              <p className="user-name">Admin</p>
               <p className="user-role">Super Admin</p>
             </div>
             <span className="material-symbols-outlined">expand_more</span>
@@ -105,7 +257,6 @@ export default function AdminPanel() {
 
         {/* Main Content */}
         <main className="admin-main">
-          {/* Header */}
           <header className="admin-header">
             <div className="header-left">
               <h1>User Management & Analytics</h1>
@@ -130,10 +281,14 @@ export default function AdminPanel() {
                   <div className="stat-icon blue">
                     <span className="material-symbols-outlined">group</span>
                   </div>
-                  <span className="stat-badge green">+12.5%</span>
+                  <span className="stat-badge green">
+                    {stats?.recent_signups > 0 ? `+${stats.recent_signups}` : '0'}
+                  </span>
                 </div>
                 <p className="stat-label">Total Users</p>
-                <h3 className="stat-number">12,840</h3>
+                <h3 className="stat-number">
+                  {stats?.total_users?.toLocaleString() || 0}
+                </h3>
               </div>
 
               <div className="stat-card">
@@ -141,32 +296,44 @@ export default function AdminPanel() {
                   <div className="stat-icon purple">
                     <span className="material-symbols-outlined">quiz</span>
                   </div>
-                  <span className="stat-badge green">+5.2%</span>
+                  <span className="stat-badge green">
+                    {stats?.total_profiles || 0}
+                  </span>
                 </div>
                 <p className="stat-label">VAK Assessments</p>
-                <h3 className="stat-number">8,520</h3>
+                <h3 className="stat-number">
+                  {stats?.total_profiles?.toLocaleString() || 0}
+                </h3>
               </div>
 
               <div className="stat-card">
                 <div className="stat-top">
                   <div className="stat-icon amber">
-                    <span className="material-symbols-outlined">bolt</span>
+                    <span className="material-symbols-outlined">verified_user</span>
                   </div>
-                  <span className="stat-badge red">-2.4%</span>
+                  <span className="stat-badge green">
+                    {stats?.verified_users || 0}
+                  </span>
                 </div>
-                <p className="stat-label">Active Sessions</p>
-                <h3 className="stat-number">1,204</h3>
+                <p className="stat-label">Verified Users</p>
+                <h3 className="stat-number">
+                  {stats?.verified_users?.toLocaleString() || 0}
+                </h3>
               </div>
 
               <div className="stat-card">
                 <div className="stat-top">
                   <div className="stat-icon emerald">
-                    <span className="material-symbols-outlined">trending_up</span>
+                    <span className="material-symbols-outlined">feedback</span>
                   </div>
-                  <span className="stat-badge green">+7.1%</span>
+                  <span className="stat-badge green">
+                    {stats?.total_feedbacks || 0}
+                  </span>
                 </div>
-                <p className="stat-label">Avg. Engagement</p>
-                <h3 className="stat-number">88.4%</h3>
+                <p className="stat-label">Total Feedbacks</p>
+                <h3 className="stat-number">
+                  {stats?.total_feedbacks?.toLocaleString() || 0}
+                </h3>
               </div>
             </div>
 
@@ -174,33 +341,47 @@ export default function AdminPanel() {
             <div className="chart-section">
               <div className="chart-header">
                 <div>
-                  <h3>Learning Style Trends</h3>
-                  <p>Assessment completions by style over the last 30 days</p>
+                  <h3>Learning Style Distribution</h3>
+                  <p>Distribution des profils d'apprentissage VAK</p>
                 </div>
                 <div className="chart-legend">
-                  <span><span className="dot blue"></span> Visual</span>
-                  <span><span className="dot purple"></span> Auditory</span>
-                  <span><span className="dot amber"></span> Kinesthetic</span>
+                  <span><span className="dot blue"></span> Visual ({stats?.profiles_by_type?.V || 0})</span>
+                  <span><span className="dot purple"></span> Auditory ({stats?.profiles_by_type?.A || 0})</span>
+                  <span><span className="dot amber"></span> Kinesthetic ({stats?.profiles_by_type?.K || 0})</span>
                 </div>
               </div>
               <div className="chart-area">
-                <svg className="chart-svg" viewBox="0 0 900 300" preserveAspectRatio="none">
-                  <path d="M0,200 Q100,180 150,190 T300,160 T450,140 T600,100 T750,80 T900,120" 
-                    fill="none" stroke="#3B82F6" strokeWidth="3" />
-                  <path d="M0,220 Q100,210 150,215 T300,190 T450,180 T600,160 T750,140 T900,160" 
-                    fill="none" stroke="#A855F7" strokeWidth="3" />
-                  <path d="M0,180 Q100,190 150,175 T300,200 T450,170 T600,190 T750,150 T900,140" 
-                    fill="none" stroke="#F59E0B" strokeWidth="3" />
-                </svg>
-                <div className="chart-labels">
-                  <span>01 OCT</span>
-                  <span>05 OCT</span>
-                  <span>10 OCT</span>
-                  <span>15 OCT</span>
-                  <span>20 OCT</span>
-                  <span>25 OCT</span>
-                  <span>30 OCT</span>
-                </div>
+                {stats?.profiles_by_type && (
+                  <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', alignItems: 'flex-end', height: '250px', padding: '2rem' }}>
+                    {Object.entries(stats.profiles_by_type).map(([letter, count]) => {
+                      const colors = { "V": "#3B82F6", "A": "#A855F7", "K": "#F59E0B" };
+                      const labels = { "V": "Visual", "A": "Auditory", "K": "Kinesthetic" };
+                      const maxCount = Math.max(...Object.values(stats.profiles_by_type));
+                      const height = (count / maxCount) * 200;
+                      
+                      return (
+                        <div key={letter} style={{ textAlign: 'center', flex: 1 }}>
+                          <div style={{
+                            height: `${height}px`,
+                            backgroundColor: colors[letter],
+                            borderRadius: '8px 8px 0 0',
+                            marginBottom: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontWeight: 'bold'
+                          }}>
+                            {count}
+                          </div>
+                          <p style={{ fontSize: '0.875rem', fontWeight: '600', color: '#6B7280' }}>
+                            {labels[letter]}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -225,72 +406,110 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              <table className="user-table">
-                <thead>
-                  <tr>
-                    <th>USER</th>
-                    <th>VAK PROFILE</th>
-                    <th>STATUS</th>
-                    <th>ENGAGEMENT</th>
-                    <th>LAST ACTIVITY</th>
-                    <th>ACTION</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td>
-                        <div className="user-info-cell">
-                          <div className={`user-avatar-circle ${user.color}`}>
-                            {user.initials}
-                          </div>
-                          <div>
-                            <p className="user-name-text">{user.name}</p>
-                            <p className="user-email-text">{user.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`vak-tag ${user.color}`}>
-                          {user.vakProfile}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="status-indicator">
-                          <span className={`status-dot ${user.status === "Active" ? "active" : "offline"}`}></span>
-                          {user.status}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="engagement-progress">
-                          <div className="progress-fill" style={{width: `${user.engagement}%`}}></div>
-                        </div>
-                      </td>
-                      <td className="activity-text">{user.lastActivity}</td>
-                      <td>
-                        <button className="more-btn">
-                          <span className="material-symbols-outlined">more_vert</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {loading ? (
+                <div style={{ padding: '2rem', textAlign: 'center' }}>Chargement...</div>
+              ) : (
+                <>
+                  <table className="user-table">
+                    <thead>
+                      <tr>
+                        <th>USER</th>
+                        <th>VAK PROFILE</th>
+                        <th>ROLE</th>
+                        <th>STATUS</th>
+                        <th>CREATED AT</th>
+                        <th>ACTION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentUsers.map((user) => {
+                        const color = getProfileColor(user.profile_type);
+                        const initials = getInitials(user.username);
+                        
+                        return (
+                          <tr key={user.id}>
+                            <td>
+                              <div className="user-info-cell">
+                                <div className={`user-avatar-circle ${color}`}>
+                                  {initials}
+                                </div>
+                                <div>
+                                  <p className="user-name-text">{user.username}</p>
+                                  <p className="user-email-text">{user.email}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              {user.profile_type ? (
+                                <span className={`vak-tag ${color}`}>
+                                  {/* ✅ Afficher la lettre (V, A, K) */}
+                                  {user.profile_type}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#9CA3AF', fontSize: '0.75rem' }}>No profile</span>
+                              )}
+                            </td>
+                            <td>
+                              <span className={`vak-tag ${user.role === 'admin' || user.role === 'superadmin' ? 'purple' : 'blue'}`}>
+                                {user.role.toUpperCase()}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="status-indicator">
+                                <span className={`status-dot ${user.is_verified ? "active" : "offline"}`}></span>
+                                {user.is_verified ? "Verified" : "Not Verified"}
+                              </div>
+                            </td>
+                            <td className="activity-text">
+                              {new Date(user.created_at).toLocaleDateString()}
+                            </td>
+                            <td>
+                              <button 
+                                className="more-btn"
+                                onClick={() => handleDeleteUser(user.id, user.username)}
+                                title="Supprimer l'utilisateur"
+                              >
+                                <span className="material-symbols-outlined">delete</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
 
-              <div className="table-pagination">
-                <p>Showing <strong>1 - 3</strong> of 12,840 users</p>
-                <div className="pagination-buttons">
-                  <button className="disabled">
-                    <span className="material-symbols-outlined">chevron_left</span>
-                  </button>
-                  <button className="active">1</button>
-                  <button>2</button>
-                  <button>3</button>
-                  <button>
-                    <span className="material-symbols-outlined">chevron_right</span>
-                  </button>
-                </div>
-              </div>
+                  <div className="table-pagination">
+                    <p>Showing <strong>{indexOfFirstUser + 1} - {Math.min(indexOfLastUser, filteredUsers.length)}</strong> of {filteredUsers.length} users</p>
+                    <div className="pagination-buttons">
+                      <button 
+                        className={currentPage === 1 ? "disabled" : ""}
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <span className="material-symbols-outlined">chevron_left</span>
+                      </button>
+                      
+                      {[...Array(Math.min(totalPages, 5))].map((_, index) => (
+                        <button
+                          key={index + 1}
+                          className={currentPage === index + 1 ? "active" : ""}
+                          onClick={() => setCurrentPage(index + 1)}
+                        >
+                          {index + 1}
+                        </button>
+                      ))}
+                      
+                      <button
+                        className={currentPage === totalPages ? "disabled" : ""}
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        <span className="material-symbols-outlined">chevron_right</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </main>
