@@ -955,3 +955,62 @@ body {
     overflow-x: auto;
   }
 }
+
+/* Container du footer de la sidebar */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ajustement de la sidebar-user (retirer le expand_more icon) */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Bouton de déconnexion */
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #EF4444;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}
+
+.logout-btn .material-symbols-outlined {
+  font-size: 1.25rem;
+}
+
+/* Ajustement pour que la sidebar utilise flexbox si ce n'est pas déjà le cas */
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Le menu doit prendre l'espace disponible */
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+}
