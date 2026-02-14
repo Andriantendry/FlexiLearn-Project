@@ -11,6 +11,7 @@ export default function FeedbackPage() {
   const [feedback, setFeedback] = useState("");
   const [email, setEmail] = useState("");
   const [includeEmail, setIncludeEmail] = useState(false);
+  const [helpfulness, setHelpfulness] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -59,6 +60,11 @@ export default function FeedbackPage() {
       setError("⚠️ Veuillez entrer un email valide.");
       return false;
     }
+
+    if (!helpfulness){
+      setError("⚠️ Veuillez indiquer si cette méthode vous a été utile.")
+      return false;
+    }
     
     return true;
   };
@@ -87,6 +93,7 @@ export default function FeedbackPage() {
         category: category,
         feedback_text: feedback.trim(),
         email: includeEmail ? email.trim() : null,
+        method_helpfulness: helpfulness || null,
         created_at: new Date().toISOString()
       };
       
@@ -122,6 +129,7 @@ export default function FeedbackPage() {
     setEmail("");
     setIncludeEmail(false);
     setError("");
+    setHelpfulness("");
   };
 
   if (submitted) {
@@ -234,6 +242,28 @@ export default function FeedbackPage() {
               {feedback.length < 10 && feedback.length > 0 && (
                 <span className="char-warning"> (minimum 10)</span>
               )}
+            </div>
+          </div>
+          
+          {/* Question sur l'utilité de la méthode */}
+          <div className="form-section">
+            <label className="section-label">
+              <span className="label-icon">💡</span>
+              Cette méthode vous a‑t‑elle été utile ?
+            </label>
+            <div className="helpfulness-group">
+              {["oui", "un peu", "pas du tout"].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`helpfulness-btn ${helpfulness === value ? "active" : ""}`}
+                  onClick={() => setHelpfulness(value)}
+                >
+                  {value === "oui" && "👍 Oui"}
+                  {value === "un peu" && "🤏 Un peu"}
+                  {value === "pas du tout" && "👎 Pas du tout"}
+                </button>
+              ))}
             </div>
           </div>
 

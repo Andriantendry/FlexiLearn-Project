@@ -34,7 +34,8 @@ def create_user(user : UserSchema, db :Session = Depends(get_db)):
         email = user.email,
         password = hashed_password,
         verification_code= code,
-        is_verified= False
+        is_verified= False,
+        role="user"
     )
     try:
         send_verification_email(user.email, code)

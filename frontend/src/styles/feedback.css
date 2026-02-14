@@ -1,21 +1,23 @@
 /* ===== CONTAINER PRINCIPAL ===== */
 .feedback-container {
+  width: 100vw;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;*/
+  background: url(../assets/images/quiz_background.png) center/cover;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* ===== HEADER ===== */
 .feedback-header {
-  max-width: 900px;
+  max-width: 95vw;
   margin: 0 auto 30px;
-  color: white;
+  color: rgb(54, 52, 52);
 }
 
 .back-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(0, 0, 0, 0.597);
+  color: rgb(253, 253, 253);
   border: 2px solid white;
   padding: 10px 20px;
   border-radius: 25px;
@@ -50,7 +52,7 @@
 
 /* ===== WRAPPER ===== */
 .feedback-wrapper {
-  max-width: 900px;
+  max-width: 96vw;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -59,7 +61,7 @@
 
 /* ===== FORMULAIRE ===== */
 .feedback-form {
-  background: white;
+  background: #ffffffc7;
   border-radius: 20px;
   padding: 35px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -78,6 +80,7 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 15px;
+  justify-content: center;
 }
 
 .label-icon {
@@ -95,8 +98,8 @@
 .star {
   background: none;
   border: none;
-  font-size: 3rem;
-  color: #ddd;
+  font-size: 2rem;
+  color: #b1adad;
   cursor: pointer;
   transition: all 0.2s ease;
   padding: 5px;
@@ -165,6 +168,8 @@
 
 /* ===== TEXTAREA ===== */
 .feedback-textarea {
+  background: white;
+  color: black;
   width: 100%;
   min-height: 150px;
   padding: 15px;
@@ -321,7 +326,7 @@
 
 /* ===== CARTE INFO ===== */
 .info-card {
-  background: white;
+  background: #ffffffc7;
   border-radius: 20px;
   padding: 25px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -329,6 +334,7 @@
 }
 
 .info-card h3 {
+  text-align: center;
   color: #333;
   font-size: 1.3rem;
   margin-bottom: 15px;
@@ -630,5 +636,57 @@
 
   .success-title {
     font-size: 1.6rem;
+  }
+}
+
+/* ===== GROUPE D'UTILITÉ ===== */
+.helpfulness-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.helpfulness-btn {
+  flex: 1 1 0px;        /* Permet aux boutons de grandir/rétrécir également */
+  min-width: 120px;     /* Largeur minimale pour éviter qu'ils deviennent trop petits */
+  padding: 15px 10px;
+  background: #f5f5f5;
+  border: 2px solid #e0e0e0;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;  /* Empêche le texte de passer à la ligne */
+}
+
+.helpfulness-btn:hover {
+  background: #e8e8e8;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.helpfulness-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: #667eea;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 768px) {
+  .helpfulness-group {
+    flex-direction: column;
+    align-items: center;
+  }
+  .helpfulness-btn {
+    white-space: normal; /* Sur mobile, on autorise le retour à la ligne */
+    min-width: auto;
   }
 }

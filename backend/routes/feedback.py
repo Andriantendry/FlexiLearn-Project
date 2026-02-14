@@ -17,6 +17,7 @@ class FeedbackSubmit(BaseModel):
     category: str
     feedback_text: str
     email: Optional[str] = None
+    method_helpfulness: Optional[str] = None
     created_at: Optional[str] = None
 
 class FeedbackResponse(BaseModel):
@@ -26,6 +27,7 @@ class FeedbackResponse(BaseModel):
     category: str
     feedback_text: str
     email: Optional[str]
+    method_helpfulness: Optional[str] = None
     created_at: datetime
     
     class Config:
@@ -72,7 +74,8 @@ def submit_feedback(feedback: FeedbackSubmit, db: Session = Depends(get_db)):
             rating=feedback.rating,
             category=feedback.category,
             feedback_text=feedback.feedback_text.strip(),
-            email=feedback.email.strip() if feedback.email else None
+            email=feedback.email.strip() if feedback.email else None,
+            method_helpfulness=feedback.method_helpfulness
         )
         
         db.add(new_feedback)
