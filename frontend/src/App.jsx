@@ -10,6 +10,7 @@ import Feedback from "./pages/feedback.jsx";
 import VerifyCode from "./pages/verify_code.jsx";
 import UserPage from "./pages/user.jsx";
 import FeedbackPage from './pages/feedbackPage';
+import AdminPanel from './pages/adminpanel';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/quiz-result" element={<QuizResult />} />
         <Route path="/feedback" element={<Feedback />} />
         <Route path="/feedbackPage" element={<FeedbackPage />} />
+        <Route path="/admin" element={<AdminPanel/>} />
       </Routes>
     </Router>
   );

@@ -11,6 +11,7 @@ from routes import recommandations
 from routes import chat
 from routes import feedback
 from routes import profile
+from routes import admin
 import logging
 from fastapi.responses import JSONResponse
 from fastapi.requests import Request
@@ -57,5 +58,6 @@ app.include_router(chat.router)
 app.include_router(recommandations.router)
 app.include_router(feedback.router)
 app.include_router(profile.router)
+app.include_router(admin.router)
 
 
