@@ -22,6 +22,7 @@ services:
   backend:
     build:
       context: ./backend
+    image: flexilearn-backend:dev
     container_name: fastapi_backend
     restart: always
     env_file:
@@ -41,6 +42,7 @@ services:
   frontend:
     build:
       context: ./frontend
+    image: flexilearn-frontend:dev
     container_name: react_frontend
     restart: always
     environment:

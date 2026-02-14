@@ -13,6 +13,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
+    image: flexilearn-backend:prod
     container_name: fastapi_backend_prod
     env_file: .env
     ports:
@@ -28,6 +29,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+    image: flexilearn-frontend:prod
     container_name: react_frontend_prod
     ports:
       - "80:80"
