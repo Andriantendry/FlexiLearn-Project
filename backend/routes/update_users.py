@@ -28,14 +28,9 @@ def update_user(data: UserUpdate, db: Session = Depends(get_db)):
         )
         db.add(profile)
     else:
-        profile.answers = data.answers
-        profile.profile_code = data.profile_code
-        profile.profil_dominant = data.profil_dominant
-        profile.profil_secondaire = data.profil_secondaire
-        profile.profil_tertiaire = data.profil_tertiaire
-        profile.statistiques = data.statistiques
+        profile.chat_answers = data.answers
         profile.recommendation = data.recommendation
     
     db.commit()
     db.refresh(profile)
-    return {"message": "Profile enregistré avec succès", "data": profile}
+    return {"message": "Données enregistrés avec succès", "data": profile}

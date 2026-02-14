@@ -10,7 +10,7 @@ router = APIRouter(
 
 # Dictionnaire des descriptions et conseils selon le profil dominant (VAK uniquement)
 PROFILE_DATA = {
-    "V": {
+    "Visuel": {
         "icon": "👁️",
         "title": "Apprenant Visuel",
         "description": "Vous avez une mémoire visuelle. Vous apprenez mieux avec des diagrammes, des couleurs et des cartes mentales.",
@@ -20,7 +20,7 @@ PROFILE_DATA = {
             {"icon": "📺", "text": "Visualisez des concepts"}
         ]
     },
-    "A": {
+    "Auditif": {
         "icon": "👂",
         "title": "Apprenant Auditif",
         "description": "Vous apprenez mieux en écoutant. Les discussions et les explications orales vous aident à mémoriser.",
@@ -30,7 +30,7 @@ PROFILE_DATA = {
             {"icon": "🗣️", "text": "Lisez à haute voix"}
         ]
     },
-    "K": {
+    "Kinesthésique": {
         "icon": "✋",
         "title": "Apprenant Kinesthésique",
         "description": "Vous apprenez par la pratique. L'expérimentation et le mouvement facilitent votre apprentissage.",
@@ -87,18 +87,19 @@ def get_user_profile(
     
     # Vérifier que le profil dominant est bien dans VAK
     if profil_dominant not in PROFILE_DATA:
-        profil_dominant = "V"
+        profil_dominant = "Visuel"
     
     # Récupérer les données du profil
     profile_info = PROFILE_DATA[profil_dominant]
     
     return {
-        "user": {
-            "id": user.id,
-            "name": user.username,
-            "email": user.email,
-            "avatar": None
-        },
+    "user": {
+        "id": user.id,
+        "name": user.username,
+        "email": user.email,
+        "role": user.role,
+        "avatar": None
+    },
         "profile": {
             "profile_code": profile_db.profile_code,
             "dominant": profile_db.profil_dominant,
