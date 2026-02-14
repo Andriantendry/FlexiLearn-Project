@@ -33,7 +33,7 @@ export default function SignIn() {
         alert(
           "Connexion réussie ! Prêt à découvrir ton style d'apprentissage ? 🚀"
         );
-        navigate("/quiz");
+        navigate("/user-page");
       } else {
         alert("Connexion réussie, mais ID manquant. Contacte le support.");
       }

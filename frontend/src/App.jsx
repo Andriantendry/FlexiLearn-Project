@@ -9,6 +9,7 @@ import ChatPage from "./pages/chat.jsx";
 import Feedback from "./pages/feedback.jsx";
 import VerifyCode from "./pages/verify_code.jsx";
 import UserPage from "./pages/user.jsx";
+import FeedbackPage from './pages/feedbackPage';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/quiz-result" element={<QuizResult />} />
         <Route path="/feedback" element={<Feedback />} />
+        <Route path="/feedbackPage" element={<FeedbackPage />} />
       </Routes>
     </Router>
   );

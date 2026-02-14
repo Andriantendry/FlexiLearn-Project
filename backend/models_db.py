@@ -61,8 +61,8 @@ class Feedback(Base):
     category = Column(String, nullable=False)  # ui, accuracy, performance, features, bug, other
     feedback_text = Column(Text, nullable=False)
     email = Column(String, nullable=True)
-    method_helpfulness = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     user = relationship("User", back_populates="feedbacks")
+
 

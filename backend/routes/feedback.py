@@ -74,8 +74,7 @@ def submit_feedback(feedback: FeedbackSubmit, db: Session = Depends(get_db)):
             rating=feedback.rating,
             category=feedback.category,
             feedback_text=feedback.feedback_text.strip(),
-            email=feedback.email.strip() if feedback.email else None,
-            method_helpfulness=feedback.method_helpfulness
+            email=feedback.email.strip() if feedback.email else None
         )
         
         db.add(new_feedback)
@@ -85,7 +84,7 @@ def submit_feedback(feedback: FeedbackSubmit, db: Session = Depends(get_db)):
         return {
             "success": True,
             "message": "Feedback enregistré avec succès",
-            "feedback_id": new_feedback.id_feedback  # ✅ Changé de 'id' à 'id_feedback'
+            "feedback_id": new_feedback.id_feedback
         }
         
     except HTTPException:
