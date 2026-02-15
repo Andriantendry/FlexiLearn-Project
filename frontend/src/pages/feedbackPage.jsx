@@ -301,9 +301,6 @@ export default function FeedbackPage() {
               {/* Form Footer */}
               <div className="submit-section">
                 <div className="submit-row">
-                  <p className="legal-text">
-                    En soumettant, vous acceptez nos <a href="#" className="legal-link">Conditions d'utilisation</a> et notre <a href="#" className="legal-link">Politique de confidentialité</a>.
-                  </p>
                   <button
                     type="submit"
                     className="primary-button"
@@ -322,14 +319,6 @@ export default function FeedbackPage() {
                 <span className="material-symbols-outlined">arrow_back</span>
                 Retour au tableau de bord
               </button>
-              <div className="footer-actions">
-                <a href="#" className="action-link">
-                  <span className="material-symbols-outlined">help</span>
-                </a>
-                <a href="#" className="action-link">
-                  <span className="material-symbols-outlined">settings</span>
-                </a>
-              </div>
             </div>
           </main>
         </div>

@@ -71,7 +71,7 @@ body {
    HERO (SECTION PRINCIPALE)
 ================================ */
 .hero {
-  padding: 31px 40px 31px 40px;
+  padding: 60px 40px;
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   align-items: start; /* ❗ PAS centré verticalement */
@@ -143,6 +143,7 @@ body {
   padding-left: 60px;
   padding-right: 60px;
   padding-bottom: 24px;
+  padding-top:60px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 60px;

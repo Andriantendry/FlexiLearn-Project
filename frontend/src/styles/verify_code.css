@@ -1,8 +1,18 @@
+.boite-code{
+  display: flex;
+  flex-direction: column;
+  background: url(../assets/images/quiz_background.png) center/cover;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+}
+
 .code-container {
-  background: white;
+  background: #ffffffa8;
   padding: 40px;
   width: 350px;
-  margin: 100px auto;
+
   border-radius: 12px;
   text-align: center;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);

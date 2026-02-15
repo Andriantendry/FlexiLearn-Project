@@ -210,14 +210,16 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <div className="chat-wrapper">
-        <div className="chat-header">
-          <div className="header-title">Assistant IA</div>
-        </div>
-        <div className="chat-window">
-          <div className="loading-screen">
-            <span className="spinner" style={{fontSize: '40px'}}>⏳</span>
-            <p>Chargement des questions...</p>
+      <div className="boite-chat">
+        <div className="chat-wrapper">
+          <div className="chat-header">
+            <div className="header-title">Assistant IA</div>
+          </div>
+          <div className="chat-window">
+            <div className="loading-screen">
+              <span className="spinner" style={{fontSize: '40px'}}>⏳</span>
+              <p>Chargement des questions...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -226,16 +228,18 @@ useEffect(() => {
 
   if (error) {
     return (
-      <div className="chat-wrapper">
-        <div className="chat-header">
-          <div className="header-title">Erreur</div>
-        </div>
-        <div className="chat-window">
-          <div className="error-screen">
-            <p>❌ {error}</p>
-            <button onClick={() => navigate("/quiz")}>
-              Retour au quiz
-            </button>
+      <div className="boite-chat">
+        <div className="chat-wrapper">
+          <div className="chat-header">
+            <div className="header-title">Erreur</div>
+          </div>
+          <div className="chat-window">
+            <div className="error-screen">
+              <p>❌ {error}</p>
+              <button onClick={() => navigate("/quiz")}>
+                Retour au quiz
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -243,83 +247,85 @@ useEffect(() => {
   }
 
   return (
-    <div className="chat-wrapper">
-      <div className="chat-header">
-        <div className="header-title">Assistant IA - Profil {profile}</div>
-        <div className="header-right">
-          <span>Question {currentStep}/{totalSteps}</span>
-          <img src={robot} className="header-icon" alt="Robot" />
-          <button onClick={handleLogout} style={{marginLeft: '10px'}}>
-            Déconnexion
-          </button>
+    <div className="boite-chat">
+      <div className="chat-wrapper">
+        <div className="chat-header">
+          <div className="header-title">Assistant IA - Profil {profile}</div>
+          <div className="header-right">
+            <span>Question {currentStep}/{totalSteps}</span>
+            <img src={robot} className="header-icon" alt="Robot" />
+            <button onClick={handleLogout} style={{marginLeft: '10px'}}>
+              Déconnexion
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="chat-window">
-        {messages.map((msg, i) => {
-          // Déterminer la classe de style du message
-          let bubbleClass = `bubble ${msg.type}`;
-          if (msg.text.includes("⏳ Génération")) {
-            bubbleClass += " loading pulse";
-          } else if (msg.text.includes("✅")) {
-            bubbleClass += " success";
-          } else if (msg.text.includes("❌") || msg.text.includes("⚠️")) {
-            bubbleClass += " error";
-          }
+        <div className="chat-window">
+          {messages.map((msg, i) => {
+            // Déterminer la classe de style du message
+            let bubbleClass = `bubble ${msg.type}`;
+            if (msg.text.includes("⏳ Génération")) {
+              bubbleClass += " loading pulse";
+            } else if (msg.text.includes("✅")) {
+              bubbleClass += " success";
+            } else if (msg.text.includes("❌") || msg.text.includes("⚠️")) {
+              bubbleClass += " error";
+            }
 
-          return (
-            <div key={i} className={`msg-row ${msg.type}`}>
-              {msg.type === "bot" && <img src={robot} className="avatar" alt="Bot" />}
-              <div className={bubbleClass}>{msg.text}</div>
-              {msg.type === "user" && <img src={human} className="avatar" alt="User" />}
+            return (
+              <div key={i} className={`msg-row ${msg.type}`}>
+                {msg.type === "bot" && <img src={robot} className="avatar" alt="Bot" />}
+                <div className={bubbleClass}>{msg.text}</div>
+                {msg.type === "user" && <img src={human} className="avatar" alt="User" />}
+              </div>
+
+            );
+          })}
+          <div ref={chatEndRef} />
+        </div>
+
+        <div className="chat-input">
+          {quizFinished ? (
+            <button className="reco-btn" onClick={handleReco}>
+              Voir recommandations
+            </button>
+          ) : generatingReco ? (
+            <div className="generating-box">
+              <span className="generating-text">
+                <span className="spinner">⏳</span>
+                Génération en cours...
+              </span>
             </div>
-
-          );
-        })}
-        <div ref={chatEndRef} />
-      </div>
-
-      <div className="chat-input">
-        {quizFinished ? (
-          <button className="reco-btn" onClick={handleReco}>
-            Voir recommandations
-          </button>
-        ) : generatingReco ? (
-          <div className="generating-box">
-            <span className="generating-text">
-              <span className="spinner">⏳</span>
-              Génération en cours...
-            </span>
-          </div>
-        ) : (
-          <div className="input-box">
-            <input
-              placeholder="Répondre..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              disabled={generatingReco}
-            />
-            <span 
-              className="send-icon" 
-              onClick={handleSend}
-              style={{
-                cursor: generatingReco ? 'not-allowed' : 'pointer',
-                opacity: generatingReco ? 0.5 : 1
-              }}
-            >
-              ➤
-            </span>
-          </div>
-        )}
-        
-        {/* Bouton de réessai en cas d'erreur */}
-        {sendError && !quizFinished && !generatingReco && (
-          <button className="retry-btn" onClick={handleRetry}>
-            <span>🔄</span>
-            <span>Réessayer</span>
-          </button>
-        )}
+          ) : (
+            <div className="input-box">
+              <input
+                placeholder="Répondre..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                disabled={generatingReco}
+              />
+              <span 
+                className="send-icon" 
+                onClick={handleSend}
+                style={{
+                  cursor: generatingReco ? 'not-allowed' : 'pointer',
+                  opacity: generatingReco ? 0.5 : 1
+                }}
+              >
+                ➤
+              </span>
+            </div>
+          )}
+          
+          {/* Bouton de réessai en cas d'erreur */}
+          {sendError && !quizFinished && !generatingReco && (
+            <button className="retry-btn" onClick={handleRetry}>
+              <span>🔄</span>
+              <span>Réessayer</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

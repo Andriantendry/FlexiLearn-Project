@@ -38,22 +38,25 @@ export default function VerifyCode() {
   };
 
   return (
-    <div className="code-container">
-      <h2>Enter the 4-digit code</h2>
-      <p>We sent a code to your email</p>
+    <div className="boite-code">
 
-      <div className="code-inputs">
-        {code.map((digit, i) => (
-          <input
+      <div className="code-container">
+        <h2>Enter the 4-digit code</h2>
+        <p>We sent a code to your email</p>
+
+        <div className="code-inputs">
+          {code.map((digit, i) => (
+            <input
             key={i}
-            maxLength="1"
-            value={digit}
-            onChange={(e) => handleChange(e.target.value, i)}
-          />
-        ))}
-      </div>
+              maxLength="1"
+              value={digit}
+              onChange={(e) => handleChange(e.target.value, i)}
+            />
+          ))}
+        </div>
 
-      <button onClick={submitCode}>Verify</button>
+        <button onClick={submitCode}>Verify</button>
     </div>
+      </div>
   );
 }
