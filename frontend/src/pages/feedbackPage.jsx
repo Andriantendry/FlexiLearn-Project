@@ -104,7 +104,7 @@ export default function FeedbackPage() {
       setSubmitted(true);
       
       setTimeout(() => {
-        navigate("/user-page");
+        navigate("/userspace");
       }, 3000);
       
     } catch (err) {
