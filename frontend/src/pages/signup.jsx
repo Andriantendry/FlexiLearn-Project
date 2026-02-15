@@ -57,15 +57,18 @@ export default function SignIn() {
       <div className="signin-container signup-mode">
         {/* LEFT PANEL */}
         <div className="signin-left">
-          <h1 className="brand">
-            Flexi<span>Learn</span> <br /> Platform
-          </h1>
+          <div class="title">
 
-          <p className="subtitle">
-            Shapes your way of learning,
-            <br />
-            optimizing progress through adaptive intelligence.{" "}
-          </p>
+            <h1 className="brand">
+            Flexi<span>Learn</span> Platform
+            </h1>
+
+            <p className="subtitle">
+              Shapes your way of learning,
+              <br />
+              optimizing progress through adaptive intelligence.{" "}
+            </p>
+          </div>
 
           <img
             src={app_icone}
@@ -73,7 +76,7 @@ export default function SignIn() {
             className="illustration"
           />
 
-          <p className="signup-left">
+          <p className="signup-left-foot">
             Have you Account?{" "}
             <Link to="/signin" className="underline-link">
               Sign in
@@ -83,13 +86,16 @@ export default function SignIn() {
 
         {/* RIGHT PANEL */}
         <div className="signin-right">
-          <img src={logo_image} alt="Logo" className="signin-logo" />
+          <div class="title">
 
-          <h2>Welcome</h2>
+            <img src={logo_image} alt="Logo" className="signin-logo" />
 
-          <p className="info">
-            Create your account using your phone no/email & password
-          </p>
+            <h2>Welcome</h2>
+
+            <p className="info">
+              Create your account using your phone no/email & password
+            </p>
+          </div>
 
           <form
             className="signin-form"

@@ -50,34 +50,40 @@ export default function SignIn() {
     <div className="signin-container">
       {/* LEFT PANEL */}
       <div className="signin-left">
-        <h1 className="brand">
-          Flexi<span>Learn</span> <br /> Platform
-        </h1>
+        <div class="title">
 
-        <p className="subtitle">
-          Shapes your way of learning,
-          <br />
-          optimizing progress through adaptive intelligence.{" "}
-        </p>
-        <img src={app_icone} alt="Team Illustration" className="illustration" />
+          <h1 className="brand">
+            Flexi<span>Learn</span> Platform
+          </h1>
 
-        <p className="signup-left">
-          Don’t Have Account?{" "}
-          <Link to="/signup" className="underline-link">
-            Sign up
-          </Link>
-        </p>
+          <p className="subtitle">
+            Shapes your way of learning,
+            <br />
+            optimizing progress through adaptive intelligence.{" "}
+          </p>
+        </div>
+          <img src={app_icone} alt="Team Illustration" className="illustration" />
+
+          <p className="signup-left-foot">
+            Don’t Have Account?{" "}
+            <Link to="/signup" className="underline-link">
+              Sign up
+            </Link>
+          </p> 
       </div>
 
       {/* RIGHT PANEL */}
       <div className="signin-right">
-        <img src={logo_image} alt="Logo" className="signin-logo" />
+        <div class="title">
 
-        <h2>Welcome back</h2>
+          <img src={logo_image} alt="Logo" className="signin-logo" />
 
-        <p className="info">
-          Log in to your account using your phone no/email & password
-        </p>
+          <h2>Welcome back</h2>
+
+          <p className="info">
+            Log in to your account using your phone no/email & password
+          </p>
+        </div>
 
         <form className="signin-form" onSubmit={handleLogin} autoComplete="off">
           {/* EMAIL FIELD */}

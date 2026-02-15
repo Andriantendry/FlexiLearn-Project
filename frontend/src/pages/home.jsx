@@ -28,7 +28,7 @@ export default function Home() {
         </div>
 
         <div className="hero-right">
-          <img
+          <img className="hero-right"
             src={hero}
             alt="https://storyset.com/images/Online-learning-cuate.svg"
           />

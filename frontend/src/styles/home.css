@@ -24,13 +24,20 @@ body {
    CONTAINER GLOBAL
 ================================ */
 .landing-container {
-  width: 100%;
+  background: url(../assets/images/quiz_background.png) center/cover;
+  width: 100vw;
+  height: 100vh
 }
 
 /* ================================
    NAVBAR
 ================================ */
 .navbar {
+  box-shadow: -12px 14px 7px 0px rgb(0 0 0 / 21%);
+  display: flex;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  background: #ffffffde;
   height: 80px;
   padding: 0 100px;
   display: flex;
@@ -48,6 +55,7 @@ body {
 }
 
 .navbar nav {
+
   display: flex;
   gap: 40px;
 }
@@ -63,18 +71,31 @@ body {
    HERO (SECTION PRINCIPALE)
 ================================ */
 .hero {
-  padding: 80px 100px 40px;
+  padding: 31px 40px 31px 40px;
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   align-items: start; /* ❗ PAS centré verticalement */
   gap: 40px;
+  border: 3px solid rgb(29, 115, 124);
+  box-shadow: 0 0 10px 10px rgb(26 35 119 / 21%);
+  border-radius: 18px;
+  margin: 40px
+}
+.hero-left{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+
 }
 
+
 .hero-left h1 {
+  text-align: center;
   font-size: 60px;
   max-width: 580px;
   font-weight: 800;
-  color: #18534F;
+  color: #324241;
   line-height: 1.1;
 }
 
@@ -119,14 +140,25 @@ body {
    FEATURES
 ================================ */
 .features {
-  padding: 60px 100px 80px;
+  padding-left: 60px;
+  padding-right: 60px;
+  padding-bottom: 24px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 60px;
 }
 
 .feature-card {
-  text-align: left;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  background-color: #ffffffde;
+  box-shadow: -12px 14px 7px 0px rgb(0 0 0 / 21%);
+  display: flex;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+   border-radius: 15px;
+ ;
 }
 
 .feature-card img {
