@@ -161,12 +161,13 @@ export default function UserSpace() {
           return;
         }
 
-        const response = await fetch(
+        // Récupérer le profil
+        const profileResponse = await fetch(
           `http://localhost:8000/get_profile/profile?user_id=${userId}`
         );
 
-        if (!response.ok) {
-          const errorData = await response.json();
+        if (!profileResponse.ok) {
+          const errorData = await profileResponse.json();
           if (errorData.detail && errorData.detail.includes("Profil d'apprentissage non trouvé")) {
             navigate("/quiz");
             return;
@@ -174,16 +175,52 @@ export default function UserSpace() {
           throw new Error(errorData.detail || "Erreur lors du chargement du profil");
         }
 
-        const data = await response.json();
-        console.log("Données reçues du backend:", data);
+        const profileData = await profileResponse.json();
+        console.log("=== DEBUG PROFIL ===");
+        console.log("Données du profil:", profileData);
         
-        setUserData(data.user);
-        setProfileData(data.profile);
-        setHasRecommendation(
-        data.profile.recommendation !== null && 
-        data.profile.recommendation !== undefined &&
-        Object.keys(data.profile.recommendation || {}).length > 0
-        );
+        // Récupérer les recommandations via l'endpoint dédié
+        let recommendationData = null;
+        try {
+          const recResponse = await fetch(
+            `http://localhost:8000/recommendation/user/${userId}`
+          );
+          
+          if (recResponse.ok) {
+            recommendationData = await recResponse.json();
+            console.log("=== DEBUG RECOMMANDATIONS ===");
+            console.log("Données des recommandations:", recommendationData);
+            console.log("Champ recommendation:", recommendationData.recommendation);
+            console.log("Type:", typeof recommendationData.recommendation);
+            
+            // Ajouter les recommandations au profil
+            profileData.profile.recommendation = recommendationData.recommendation;
+          } else {
+            console.log("Aucune recommandation trouvée pour cet utilisateur");
+          }
+        } catch (recError) {
+          console.log("Erreur lors de la récupération des recommandations:", recError);
+        }
+        
+        setUserData(profileData.user);
+        setProfileData(profileData.profile);
+        
+        // Vérifier si on a des recommandations
+        let hasReco = false;
+        if (profileData.profile.recommendation) {
+          if (typeof profileData.profile.recommendation === 'string') {
+            const trimmed = profileData.profile.recommendation.trim();
+            console.log("Recommandation (string) - premiers 100 chars:", trimmed.substring(0, 100));
+            hasReco = trimmed.length > 0 && trimmed !== '{}' && trimmed !== 'null';
+          } else if (typeof profileData.profile.recommendation === 'object') {
+            const keys = Object.keys(profileData.profile.recommendation);
+            console.log("Recommandation (object) - clés:", keys);
+            hasReco = keys.length > 0;
+          }
+        }
+        
+        console.log("=== RÉSULTAT: hasRecommendation =", hasReco, "===");
+        setHasRecommendation(hasReco);
         setLoading(false);
       } catch (err) {
         console.error("Erreur:", err);
@@ -226,12 +263,59 @@ export default function UserSpace() {
 
     // Fonction pour gérer les recommandations
     const handleRecommendations = () => {
-    if (hasRecommendation) {
-        alert("Affichage des recommandations (page à créer)");
-        // TODO: navigate("/recommendations");
-    } else {
-        navigate("/chat");
-    }
+        console.log("handleRecommendations appelé");
+        console.log("hasRecommendation:", hasRecommendation);
+        console.log("profileData.recommendation:", profileData.recommendation);
+        
+        if (hasRecommendation && profileData.recommendation) {
+            // Parser les recommandations si elles sont en string JSON
+            let recommendations;
+            try {
+                let recData = profileData.recommendation;
+                
+                // Si c'est une chaîne, essayer de la parser
+                if (typeof recData === 'string') {
+                    console.log("Parsing string JSON...");
+                    // Parser une première fois
+                    recData = JSON.parse(recData);
+                    
+                    // Si le résultat est encore une chaîne, parser à nouveau (cas du double encoding)
+                    if (typeof recData === 'string') {
+                        console.log("Double parsing nécessaire...");
+                        recData = JSON.parse(recData);
+                    }
+                }
+                
+                recommendations = recData;
+                console.log("Recommandations parsées:", recommendations);
+                
+                // Vérifier que les recommandations ont la structure attendue
+                if (!recommendations.sections || !Array.isArray(recommendations.sections)) {
+                    throw new Error("Structure de recommandations invalide");
+                }
+                
+                // Naviguer vers QuizResult avec les données
+                navigate("/quiz-result", {
+                    state: {
+                        profile: profileData.profile_code,
+                        recommendations: recommendations
+                    }
+                });
+            } catch (error) {
+                console.error("Erreur lors du parsing des recommandations:", error);
+                console.error("Données brutes:", profileData.recommendation);
+                alert("Erreur lors du chargement des recommandations. Veuillez refaire le test.");
+                navigate("/quiz");
+            }
+        } else {
+            // Pas de recommandations, rediriger vers le quiz
+            const confirmation = window.confirm(
+                "Vous n'avez pas encore de recommandations personnalisées. Voulez-vous passer le test maintenant ?"
+            );
+            if (confirmation) {
+                navigate("/quiz");
+            }
+        }
     };
 
     // Fonction pour les cours (coming soon)

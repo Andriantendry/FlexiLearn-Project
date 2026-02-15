@@ -6,7 +6,7 @@ export default function QuizResult() {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, recommendations } = location.state || {};
-  const [activeSection, setActiveSection] = useState(0); // Section active
+  const [activeStep, setActiveStep] = useState(0);
 
   if (!profile || !recommendations) {
     return (
@@ -36,6 +36,7 @@ export default function QuizResult() {
     localStorage.removeItem("recommendations");
     navigate("/quiz");
   };
+
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
@@ -68,118 +69,229 @@ export default function QuizResult() {
     }
   };
 
+  // Utiliser directement les sections des recommandations
+  const learningSteps = recommendations.sections?.map((section, index) => {
+    const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#10B981", "#F59E0B", "#EF4444"];
+    const icons = ["analytics", "workspace_premium", "warning", "home", "school", "tips_and_updates"];
+    
+    return {
+      id: index + 1,
+      title: section.title,
+      icon: icons[index] || "article",
+      description: `Section ${index + 1}`,
+      color: colors[index] || "#64748b"
+    };
+  }) || [];
+
   return (
     <div className="result-container">
+      {/* Header */}
       <header className="result-header">
-        <div className="brand">🎓 FlexiLearn</div>
-        <h1>Votre Profil d'Apprentissage</h1>
+        <div className="header-content">
+          <div className="brand">
+            <span className="brand-icon material-symbols-outlined">school</span>
+            <span className="brand-text">FlexiLearn</span>
+          </div>
+          <h1 className="header-title">Vos Recommandations Personnalisées</h1>
+          <div className="header-actions">
+            <button className="header-btn" onClick={() => navigate("/userspace")} title="Mon Espace">
+              <span className="material-symbols-outlined">dashboard</span>
+            </button>
+            <button className="header-btn" onClick={saveProfile} title="Sauvegarder">
+              <span className="material-symbols-outlined">bookmark</span>
+            </button>
+            <button className="header-btn" onClick={handleLogout} title="Déconnexion">
+              <span className="material-symbols-outlined">logout</span>
+            </button>
+          </div>
+        </div>
       </header>
 
-      {/* Carte du profil */}
-    <div className="profile-card">
-      <div className="profile-icon">
-            {profile === "VA" || profile === "VK" ? "👁️" : 
-             profile === "AV" || profile === "AK" ? "👂" : "✋"}
-          </div>
-      <h2 className="profile-title">{profileName}</h2>
-      <p className="profile-code">Code: {profile}</p>
-      <div className="profile-description">
-        {profile.includes("V") && <span className="badge badge-visual">Visuel</span>}
-        {profile.includes("A") && <span className="badge badge-auditory">Auditif</span>}
-        {profile.includes("K") && <span className="badge badge-kinesthetic">Kinesthésique</span>}
-      </div>
-    </div>
-
-      <div className="main-layout">
-  {/* Colonne gauche : boutons et actions */}
-  <div className="sidebar-left">
-    
-
-    {/* Boutons catégories */}
-    <div className="categories-menu">
-      <h3 className="menu-title">Sections</h3>
-      <div className="categories-grid">
-        {recommendations.sections.map((section, idx) => (
-          <button
-            key={idx}
-            className={`category-btn ${activeSection === idx ? "active" : ""}`}
-            onClick={() => setActiveSection(idx)}
-          >
-            <span className="category-icon">•</span>
-            <span className="category-name">{section.title}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-
-    {/* Boutons actions */}
-    <div className="actions-footer">
-      <div className="actions-buttons">
-        <button className="btn-secondary" onClick={handleRestart}>
-          Refaire le test
-        </button>
-        <button className="btn-primary" onClick={saveProfile}>
-          Sauvegarder
-        </button>
-        <button className="btn-logout" onClick={handleLogout}>
-          Se déconnecter
-        </button>
-      </div>
-    </div>
-  </div>
-
-  {/* Colonne droite : contenu + "Que faire" */}
-  <div className="content-right">
-    {recommendations.sections.map((section, sIdx) => (
-      <div
-        key={sIdx}
-        className={`recommendations-content ${activeSection === sIdx ? "active" : ""}`}
-      >
-        {section.items.map((item, iIdx) => (
-          <div key={iIdx}>
-            {item.subtitle && (
-              <div className="reco-subsection">
-                <h4 className="reco-subtitle">{item.subtitle}</h4>
-                <ul className="reco-list">
-                  {item.points.map((point, pIdx) => {
-                    // Sépare uniquement si le texte contient " :"
-                    const hasColon = point.includes(" :");
-                    const [key, ...rest] = hasColon ? point.split(" :") : ["", point];
-                    return (
-                      <li key={pIdx} className="reco-list-item">
-                        {hasColon ? (
-                          <>
-                            <span className="reco-key">{key} :</span>{" "}
-                            <span className="reco-value">{rest.join(" :")}</span>
-                          </>
-                        ) : (
-                          <span className="reco-value">{point}</span>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
+      {/* Carte du profil - Hero Section */}
+      <div className="hero-section">
+        <div className="profile-hero-card">
+          <div className="profile-badge-wrapper">
+            <div className="profile-icon-large">
+              {profile === "VA" || profile === "VK" ? "👁️" : 
+               profile === "AV" || profile === "AK" ? "👂" : "✋"}
+            </div>
+            <div className="profile-details">
+              <h2 className="profile-name">{profileName}</h2>
+              <p className="profile-subtitle">Profil d'apprentissage identifié</p>
+              <div className="profile-tags">
+                {/* Ordre correct: le profil dominant en premier */}
+                {profile[0] === "A" && <span className="tag tag-auditory">Auditif</span>}
+                {profile[0] === "V" && <span className="tag tag-visual">Visuel</span>}
+                {profile[0] === "K" && <span className="tag tag-kinesthetic">Kinesthésique</span>}
+                
+                {profile[1] === "A" && <span className="tag tag-auditory">Auditif</span>}
+                {profile[1] === "V" && <span className="tag tag-visual">Visuel</span>}
+                {profile[1] === "K" && <span className="tag tag-kinesthetic">Kinesthésique</span>}
               </div>
-            )}
-            {item.text && <p className="reco-paragraph">{item.text}</p>}
+            </div>
           </div>
-        ))}
+        </div>
       </div>
-    ))}
 
-    {/* Informations supplémentaires */}
-    <div className="info-card">
-      <h3>Que faire maintenant ?</h3>
-      <ul>
-        <li>Appliquez ces recommandations dans vos études quotidiennes</li>
-        <li>Adaptez votre environnement d'apprentissage selon votre profil</li>
-        <li>Suivez vos progrès et ajustez vos méthodes si nécessaire</li>
-        <li>Partagez vos stratégies avec vos enseignants ou formateurs</li>
-      </ul>
-    </div>
-  </div>
-</div>
+      {/* Stepper de progression */}
+      <div className="stepper-container">
+        <div className="stepper">
+          {learningSteps.map((step, index) => (
+            <div 
+              key={step.id}
+              className={`step-item ${activeStep === index ? 'active' : ''} ${activeStep > index ? 'completed' : ''}`}
+              onClick={() => setActiveStep(index)}
+            >
+              <div className="step-indicator" style={{ borderColor: step.color }}>
+                <span 
+                  className="material-symbols-outlined step-icon"
+                  style={{ color: activeStep >= index ? step.color : '#94a3b8' }}
+                >
+                  {activeStep > index ? 'check_circle' : step.icon}
+                </span>
+              </div>
+              <div className="step-content">
+                <p className="step-title">{step.title}</p>
+                <p className="step-description">{step.description}</p>
+              </div>
+              {index < learningSteps.length - 1 && (
+                <div className={`step-connector ${activeStep > index ? 'completed' : ''}`}></div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
 
+      {/* Contenu des étapes */}
+      <div className="content-area">
+        <div className="content-wrapper">
+          {/* Affichage dynamique de toutes les sections */}
+          {recommendations.sections && recommendations.sections.map((section, sectionIndex) => (
+            activeStep === sectionIndex && (
+              <div key={sectionIndex} className="step-content-card animate-in">
+                <div className="content-header">
+                  <span 
+                    className="material-symbols-outlined header-icon" 
+                    style={{ color: learningSteps[sectionIndex]?.color || '#64748b' }}
+                  >
+                    {learningSteps[sectionIndex]?.icon || 'article'}
+                  </span>
+                  <div>
+                    <h2>{section.title}</h2>
+                    <p className="content-subtitle">Section {sectionIndex + 1} sur {recommendations.sections.length}</p>
+                  </div>
+                </div>
+
+                <div className="content-body">
+                  {section.items.map((item, itemIndex) => (
+                    <div key={itemIndex} className="recommendation-section">
+                      {item.subtitle && (
+                        <h3 className="section-subtitle">
+                          <span className="subtitle-dot" style={{ backgroundColor: learningSteps[sectionIndex]?.color }}></span>
+                          {item.subtitle}
+                        </h3>
+                      )}
+                      
+                      {item.points && item.points.length > 0 && (
+                        <div className="points-container">
+                          {item.points.map((point, pointIndex) => {
+                            const hasColon = point.includes(" :");
+                            const [key, ...rest] = hasColon ? point.split(" :") : ["", point];
+                            
+                            return (
+                              <div key={pointIndex} className="point-card">
+                                <div className="point-icon-wrapper">
+                                  <span className="material-symbols-outlined point-icon">
+                                    {sectionIndex === 0 ? 'analytics' :
+                                     sectionIndex === 1 ? 'emoji_objects' :
+                                     sectionIndex === 2 ? 'report' :
+                                     sectionIndex === 3 ? 'home' :
+                                     sectionIndex === 4 ? 'psychology' :
+                                     'check_circle'}
+                                  </span>
+                                </div>
+                                <div className="point-content">
+                                  {hasColon ? (
+                                    <>
+                                      <h4 className="point-title">{key.trim()}</h4>
+                                      <p className="point-description">{rest.join(" :").trim()}</p>
+                                    </>
+                                  ) : (
+                                    <p className="point-description full-width">{point}</p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      
+                      {item.text && (
+                        <div className="item-text-block">
+                          <p>{item.text}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* CTA pour la dernière section */}
+                  {sectionIndex === recommendations.sections.length - 1 && (
+                    <div className="final-cta-section">
+                      <div className="cta-card">
+                        <span className="material-symbols-outlined cta-icon">emoji_events</span>
+                        <h3>Félicitations ! Vous avez parcouru toutes vos recommandations</h3>
+                        <p>N'oubliez pas de sauvegarder votre profil pour y accéder à tout moment</p>
+                        <div className="cta-buttons">
+                          <button className="btn-primary-large" onClick={saveProfile}>
+                            <span className="material-symbols-outlined">bookmark</span>
+                            Sauvegarder mes recommandations
+                          </button>
+                          <button className="btn-secondary-large" onClick={handleRestart}>
+                            <span className="material-symbols-outlined">refresh</span>
+                            Refaire le test
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          ))}
+        </div>
+
+        {/* Navigation */}
+        <div className="navigation-controls">
+          <button 
+            className="nav-btn nav-prev"
+            onClick={() => setActiveStep(Math.max(0, activeStep - 1))}
+            disabled={activeStep === 0}
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+            Précédent
+          </button>
+          
+          <div className="step-indicator-dots">
+            {learningSteps.map((step, index) => (
+              <button
+                key={step.id}
+                className={`dot ${activeStep === index ? 'active' : ''}`}
+                onClick={() => setActiveStep(index)}
+                style={{ backgroundColor: activeStep === index ? step.color : '#cbd5e1' }}
+              />
+            ))}
+          </div>
+
+          <button 
+            className="nav-btn nav-next"
+            onClick={() => setActiveStep(Math.min(learningSteps.length - 1, activeStep + 1))}
+            disabled={activeStep === learningSteps.length - 1}
+          >
+            Suivant
+            <span className="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
