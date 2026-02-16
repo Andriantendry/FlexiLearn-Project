@@ -365,7 +365,6 @@ body {
    ========================================== */
 
 .content-area {
-  max-width: 1400px;
   padding: 0 2rem;
 }
 
@@ -930,7 +929,7 @@ body {
    ========================================== */
 
 .navigation-controls {
-  background:  linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  background:  white;
   display: flex;
   justify-content: space-between;
   align-items: center;
