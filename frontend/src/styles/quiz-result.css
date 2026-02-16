@@ -47,8 +47,9 @@ body {
 }
 
 .result-container {
+  width: 100vw;
   min-height: 100vh;
-  background: var(--bg-main);
+  background: url(../assets/images/quiz_background.png) center/cover;
 }
 
 /* ==========================================
@@ -56,12 +57,12 @@ body {
    ========================================== */
 
 .result-header {
+  display: flex;
+  flex-direction: row;
   background: white;
+  align-items: space-between;
   border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-sm);
+
 }
 
 .header-content {
@@ -270,7 +271,7 @@ body {
 }
 
 .stepper {
-  background: white;
+  background: #ffffffa0;
   border-radius: var(--radius-xl);
   padding: 2rem;
   box-shadow: var(--shadow-md);
@@ -365,12 +366,11 @@ body {
 
 .content-area {
   max-width: 1400px;
-  margin: 0 auto 4rem;
   padding: 0 2rem;
 }
 
 .content-wrapper {
-  background: white;
+  background: #ffffffa0;
   border-radius: var(--radius-xl);
   padding: 3rem;
   box-shadow: var(--shadow-lg);
@@ -930,12 +930,17 @@ body {
    ========================================== */
 
 .navigation-controls {
+  background:  linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 3rem;
+  margin-bottom: 1rem;
   padding-top: 2rem;
-  border-top: 2px solid var(--border-color);
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
 }
 
 .nav-btn {

@@ -430,17 +430,6 @@ export default function UserSpace() {
                 <span className="nav-badge">Nouveau</span>
                 )}
             </a>
-            <a 
-                href="#" 
-                className="nav-link nav-link-disabled"
-                onClick={(e) => {
-                e.preventDefault();
-                handleCours();
-                }}
-            >
-                Cours
-                <span className="nav-badge coming-soon">Bientôt</span>
-            </a>
             {isAdmin() && (
                 <a 
                 href="#" 
