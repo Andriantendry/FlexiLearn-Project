@@ -11,6 +11,7 @@ import UserPage from "./pages/user.jsx";
 import FeedbackPage from './pages/feedbackPage';
 import AdminPanel from './pages/adminpanel';
 import UserSpace from './pages/userspace';
+import Cours from './pages/cours.jsx';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/feedbackPage" element={<FeedbackPage />} />
         <Route path="/admin" element={<AdminPanel/>} />
         <Route path="/userspace" element={<UserSpace/>} />
+        <Route path="/cours" element={<Cours/>} />
       </Routes>
     </Router>
   );
