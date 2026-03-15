@@ -320,8 +320,8 @@ export default function UserSpace() {
 
     // Fonction pour les cours (coming soon)
     const handleCours = () => {
-    alert("📚 Les cours seront bientôt disponibles ! 🚀");
-    };
+    navigate("/cours");
+  };
 
     // Vérifier si l'utilisateur est admin
     const isAdmin = () => {
@@ -429,6 +429,17 @@ export default function UserSpace() {
                 {!hasRecommendation && (
                 <span className="nav-badge">Nouveau</span>
                 )}
+            </a>
+            <a 
+                href="#" 
+                className="nav-link"
+                onClick={(e) => {
+                e.preventDefault();
+                handleCours();
+                }}
+            >
+                Cours
+                {/* <span className="nav-badge coming-soon">Bientôt</span> */}
             </a>
             {isAdmin() && (
                 <a 

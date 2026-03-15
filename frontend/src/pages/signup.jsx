@@ -1,16 +1,98 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/signin&signup.css";
-import app_icone from "../assets/icones/app_icon.png";
 import mail_icone from "../assets/icones/email.png";
 import eye_icone from "../assets/icones/eye.png";
 import eye_hide_icone from "../assets/icones/eye_hide.png";
 import lock_icone from "../assets/icones/lock.png";
 import user_icone from "../assets/icones/user.png";
-import logo_image from "../assets/images/logo.png";
-
 import { Link, useNavigate } from "react-router-dom";
+import LOGO_SRC from "../assets/images/flexi_logo.png";
 
-export default function SignIn() {
+/* ══════════════════════════════════════════════
+   LEFTPANEL — intégré directement dans SignUp
+══════════════════════════════════════════════ */
+function LeftPanel({ mode = "signup" }) {
+  const [phase, setPhase] = useState("logo"); // logo → glow → melt → text → done
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase("glow"), 800);
+    const t2 = setTimeout(() => setPhase("melt"), 1800);
+    const t3 = setTimeout(() => setPhase("text"), 3100);
+    const t4 = setTimeout(() => setPhase("done"), 4600);
+    return () => [t1, t2, t3, t4].forEach(clearTimeout);
+  }, []);
+
+  return (
+    <div className="lp-root">
+      {/* Particules décoratives */}
+      <div className="lp-particles" aria-hidden="true">
+        {[...Array(16)].map((_, i) => (
+          <div key={i} className="lp-particle" style={{
+            left:              `${(i * 41 + 13) % 90 + 5}%`,
+            top:               `${(i * 67 + 9)  % 85 + 5}%`,
+            width:             `${(i % 3) + 4}px`,
+            height:            `${(i % 3) + 4}px`,
+            animationDuration: `${4 + (i % 3)}s`,
+            animationDelay:    `${(i * 0.22) % 2.5}s`,
+          }} />
+        ))}
+      </div>
+
+      {/* Logo animé */}
+      {(phase === "logo" || phase === "glow" || phase === "melt") && (
+        <div className={`lp-logo-wrap lp-logo-${phase}`}>
+          <img src={LOGO_SRC} alt="FlexiLearn" className="lp-logo-img" />
+        </div>
+      )}
+
+      {/* Brand block après fondu */}
+      {(phase === "text" || phase === "done") && (
+        <div className="lp-brand-block">
+          <div className="lp-mini-wrap">
+            <img src={LOGO_SRC} alt="" className="lp-mini" />
+          </div>
+
+          <div className="lp-name">
+            <div className="lp-word">
+              {"FLEXI".split("").map((c, i) => (
+                <span key={i} className="lp-letter lp-teal"
+                  style={{ animationDelay: `${i * 0.08}s` }}>{c}</span>
+              ))}
+            </div>
+            <div className="lp-word">
+              {"LEARN".split("").map((c, i) => (
+                <span key={i} className="lp-letter lp-grad"
+                  style={{ animationDelay: `${0.4 + i * 0.08}s` }}>{c}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="lp-line" />
+
+          <p className="lp-subtitle">
+            Apprendre à votre rythme · Évoluer sans limites
+          </p>
+        </div>
+      )}
+
+      {/* Lien vers l'autre page — aligné horizontalement avec le titre */}
+      <p className="lp-foot">
+        {mode === "signin" ? (
+          <>Pas encore de compte ?{" "}
+            <Link to="/signup" className="lp-link">S'inscrire</Link></>
+        ) : (
+          <>Déjà un compte ?{" "}
+            <Link to="/signin" className="lp-link">Se connecter</Link></>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   PAGE INSCRIPTION
+══════════════════════════════════════════════ */
+export default function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,170 +108,114 @@ export default function SignIn() {
       return;
     }
     setLoading(true);
-
     try {
       const res = await fetch("http://localhost:8000/user/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),
       });
-
       const data = await res.json();
-      const userId = data.user_id || data.user?.id || data.id;
-
-     if(res.ok){
-      localStorage.setItem("email", data.email)
-      alert("Mail envoyé")
-      navigate('/verify-code')
-     }else{
-      alert("internal server")
-     }
-
+      if (res.ok) {
+        localStorage.setItem("email", data.email);
+        alert("E-mail envoyé !");
+        navigate("/verify-code");
+      } else {
+        alert("Erreur serveur interne");
+      }
     } catch (err) {
       console.error(err);
-      alert("Erreur serveur. Réessaie dans quelques instants.");
+      alert("Erreur serveur. Réessayez dans quelques instants.");
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <div className="signin-container">
-      <div className="signin-container signup-mode">
-        {/* LEFT PANEL */}
-        <div className="signin-left">
-          <div class="title">
+    <div className="signin-container signup-mode">
+      <LeftPanel mode="signup" />
 
-            <h1 className="brand">
-            Flexi<span>Learn</span> Platform
-            </h1>
-
-            <p className="subtitle">
-              Shapes your way of learning,
-              <br />
-              optimizing progress through adaptive intelligence.{" "}
-            </p>
-          </div>
-
-          <img
-            src={app_icone}
-            alt="Team Illustration"
-            className="illustration"
-          />
-
-          <p className="signup-left-foot">
-            Have you Account?{" "}
-            <Link to="/signin" className="underline-link">
-              Sign in
-            </Link>
-          </p>
+      <div className="signin-right">
+        <div className="title">
+          <h2>Créer un compte</h2>
+          <p className="info">Inscrivez-vous avec votre adresse e-mail et mot de passe</p>
         </div>
 
-        {/* RIGHT PANEL */}
-        <div className="signin-right">
-          <div class="title">
-
-            <img src={logo_image} alt="Logo" className="signin-logo" />
-
-            <h2>Welcome</h2>
-
-            <p className="info">
-              Create your account using your phone no/email & password
-            </p>
+        <form className="signin-form" onSubmit={handleLogin} autoComplete="off">
+          <label className="field-label">Nom d'utilisateur</label>
+          <div className="input-box">
+            <img src={user_icone} className="input-icon" alt="" />
+            <input
+              type="text"
+              placeholder="Choisissez un nom d'utilisateur"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="off"
+            />
           </div>
 
-          <form
-            className="signin-form"
-            onSubmit={handleLogin}
-            autoComplete="off"
-          >
-            {/* USERNAME */}
-            <label className="field-label">Username</label>
-            <div className="input-box">
-              <img src={user_icone} className="input-icon" />
-              <input
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoComplete="off"
-              />
-            </div>
-            {/* EMAIL FIELD */}
-            <label className="field-label">Email Address</label>
-            <div className="input-box">
-              <img src={mail_icone} className="input-icon" alt="" />
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="off"
-              />
-            </div>
+          <label className="field-label">Adresse e-mail</label>
+          <div className="input-box">
+            <img src={mail_icone} className="input-icon" alt="" />
+            <input
+              type="email"
+              placeholder="Entrez votre e-mail"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="off"
+            />
+          </div>
 
-            {/* PASSWORD FIELD */}
-            <label className="field-label">Your Password</label>
-            <div className="input-box password-box">
-              <img src={lock_icone} className="input-icon" alt="" />
+          <label className="field-label">Mot de passe</label>
+          <div className="input-box password-box">
+            <img src={lock_icone} className="input-icon" alt="" />
+            <input
+              type={showPwd ? "text" : "password"}
+              placeholder="Créez un mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="off"
+            />
+            <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
+              <img src={showPwd ? eye_icone : eye_hide_icone} alt="toggle" className="pwd-icon" />
+            </span>
+          </div>
 
-              <input
-                type={showPwd ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="off"
-              />
+          <label className="field-label">Confirmer le mot de passe</label>
+          <div className="input-box password-box">
+            <img src={lock_icone} className="input-icon" alt="" />
+            <input
+              type={showPwd ? "text" : "password"}
+              placeholder="Confirmez votre mot de passe"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              autoComplete="off"
+            />
+            <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
+              <img src={showPwd ? eye_icone : eye_hide_icone} alt="toggle" className="pwd-icon" />
+            </span>
+          </div>
 
-              <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
-                <img
-                  src={showPwd ? eye_icone : eye_hide_icone}
-                  alt="toggle"
-                  className="pwd-icon"
-                />
-              </span>
-            </div>
-            {/* CONFIRM PASSWORD FIELD */}
-            <label className="field-label">Confirm Password</label>
-            <div className="input-box password-box">
-              <img src={lock_icone} className="input-icon" alt="" />
+          {confirmPassword && password !== confirmPassword && (
+            <p style={{ color: "#c0392b", fontSize: "12px", marginBottom: 8 }}>
+              Les mots de passe ne correspondent pas
+            </p>
+          )}
 
-              <input
-                type={showPwd ? "text" : "password"}
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                autoComplete="off"
-              />
-              <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
-                <img
-                  src={showPwd ? eye_icone : eye_hide_icone}
-                  alt="toggle"
-                  className="pwd-icon"
-                />
-              </span>
-            </div>
-            {confirmPassword && password !== confirmPassword && (
-              <p style={{ color: "red", fontSize: "12px" }}>
-                Les mots de passe ne correspondent pas
-              </p>
-            )}
-            <div className="options">
-              <label>
-                <input type="checkbox" defaultChecked={false} /> Remember me
-              </label>
+          <div className="options">
+            <label>
+              <input type="checkbox" defaultChecked={false} /> Se souvenir de moi
+            </label>
+            <a href="#" className="forgot-link underline-link">Mot de passe oublié ?</a>
+          </div>
 
-              <a href="#" className="forgot-link underline-link">
-                Forgot Password?
-              </a>
-            </div>
-
-            <button className="login-btn">SIGNUP</button>
-          </form>
-        </div>
+          <button className="login-btn" disabled={loading}>
+            {loading ? "..." : "S'INSCRIRE"}
+          </button>
+        </form>
       </div>
     </div>
   );
