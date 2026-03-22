@@ -40,6 +40,20 @@ function getUserId() {
   return localStorage.getItem("user_id") || "1";
 }
 
+function relativeDate(dateStr) {
+  if (!dateStr) return "";
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+  if (diff === 0) return "Aujourd'hui";
+  if (diff === 1) return "Hier";
+  if (diff < 7) return `Il y a ${diff}j`;
+  if (diff < 30) return `Il y a ${Math.floor(diff/7)}sem`;
+  return `Il y a ${Math.floor(diff/30)}mois`;
+}
+
+function progressValue(status) {
+  return status === "termine" ? 100 : status === "en-cours" ? 35 : 0;
+}
+
 // ─── ADD SUBJECT MODAL ────────────────────────────────────────────────────────
 function AddSubjectModal({ onClose, onAdd }) {
   const [form, setForm]       = useState({ title: "", status: "ajoute", icon: "psychology" });
@@ -166,12 +180,14 @@ function AddSubjectModal({ onClose, onAdd }) {
   );
 }
 
-// ─── GUIDE SIDEBAR ────────────────────────────────────────────────────────────
-function GuideSidebar({ subject }) {
-  const [guide,     setGuide]     = useState(null);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState(null);
-  const [activeTab, setActiveTab] = useState(0);
+// ─── GUIDE PANEL (full view) ─────────────────────────────────────────────────
+function GuidePanel({ subject, onClose, onStatusChange }) {
+  const [guide,       setGuide]       = useState(null);
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState(null);
+  const [activeTab,   setActiveTab]   = useState(0);
+  const [exporting,   setExporting]   = useState(false);
+  const [guideProfile, setGuideProfile] = useState({ dom: null, sec: null });
 
   const GUIDE_TABS = [
     { key: "plan",        icon: "format_list_numbered", label: "Plan" },
@@ -184,6 +200,7 @@ function GuideSidebar({ subject }) {
   useEffect(() => {
     if (!subject) return;
     setGuide(null); setError(null); setActiveTab(0);
+    setGuideProfile({ dom: null, sec: null });
     fetchGuide();
   }, [subject?.id_subject]);
 
@@ -191,23 +208,23 @@ function GuideSidebar({ subject }) {
     setLoading(true);
     try {
       const data = await apiFetch(`/cours/subjects/${subject.id_subject}/guide`);
-      // Le guide est dans data.contenu (JSON stocké en DB)
       setGuide(data.contenu || data);
+      if (data.profil_dominant) setGuideProfile({ dom: data.profil_dominant, sec: data.profil_secondaire });
     } catch (e) {
-      setError("Impossible de charger le guide. Vérifiez que le backend est démarré.");
+      setError("Impossible de charger le guide.");
     } finally {
       setLoading(false);
     }
   };
 
-  const color = VAK_COLOR[subject?.profil_dominant] || "#18a89e";
-  const [exporting, setExporting] = useState(false);
+  const domCode = guideProfile.dom || subject?.profil_dominant;
+  const secCode = guideProfile.sec || subject?.profil_secondaire;
+  const color = VAK_COLOR[domCode] || "#18a89e";
 
   const exportPDF = async () => {
     if (!guide || exporting) return;
     setExporting(true);
     try {
-      // Charger jsPDF depuis CDN si pas encore chargé
       if (!window.jspdf) {
         await new Promise((resolve, reject) => {
           const s = document.createElement("script");
@@ -221,186 +238,161 @@ function GuideSidebar({ subject }) {
       const W = 210, margin = 18, lineH = 6, maxW = W - margin * 2;
       let y = 20;
       const primary = [24, 168, 158];
-
-      const addText = (text, size, bold, color, indent = 0) => {
-        doc.setFontSize(size);
-        doc.setFont("helvetica", bold ? "bold" : "normal");
-        doc.setTextColor(...(color || [30, 30, 30]));
-        const lines = doc.splitTextToSize(String(text || ""), maxW - indent);
-        lines.forEach(line => {
+      const addText = (text, size, bold, clr, indent = 0) => {
+        doc.setFontSize(size); doc.setFont("helvetica", bold ? "bold" : "normal");
+        doc.setTextColor(...(clr || [30,30,30]));
+        doc.splitTextToSize(String(text || ""), maxW - indent).forEach(line => {
           if (y > 270) { doc.addPage(); y = 20; }
-          doc.text(line, margin + indent, y);
-          y += lineH;
+          doc.text(line, margin + indent, y); y += lineH;
         });
       };
-
       const addSection = (title) => {
         if (y > 260) { doc.addPage(); y = 20; }
-        y += 4;
-        doc.setFillColor(...primary);
+        y += 4; doc.setFillColor(...primary);
         doc.roundedRect(margin, y - 4, maxW, 8, 2, 2, "F");
-        doc.setFontSize(11); doc.setFont("helvetica", "bold");
-        doc.setTextColor(255, 255, 255);
-        doc.text(title, margin + 4, y + 1);
-        y += 10;
-        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(11); doc.setFont("helvetica", "bold"); doc.setTextColor(255,255,255);
+        doc.text(title, margin + 4, y + 1); y += 10; doc.setTextColor(30,30,30);
       };
-
-      const addDivider = () => {
-        doc.setDrawColor(220, 220, 220);
-        doc.line(margin, y, W - margin, y);
-        y += 4;
-      };
-
-      // HEADER
-      doc.setFillColor(...primary);
-      doc.rect(0, 0, W, 14, "F");
-      doc.setFontSize(13); doc.setFont("helvetica", "bold");
-      doc.setTextColor(255, 255, 255);
-      doc.text("Flexilearn — Guide VAK", margin, 9);
-      y = 22;
-
+      doc.setFillColor(...primary); doc.rect(0, 0, W, 14, "F");
+      doc.setFontSize(13); doc.setFont("helvetica", "bold"); doc.setTextColor(255,255,255);
+      doc.text("Flexilearn — Guide VAK", margin, 9); y = 22;
       addText(subject.title, 16, true, primary);
-      addText(`Profil : ${VAK_LABELS[subject.profil_dominant] || subject.profil_dominant} + ${VAK_LABELS[subject.profil_secondaire] || subject.profil_secondaire}`, 10, false, [100, 100, 100]);
+      addText(`Profil : ${VAK_LABELS[domCode] || domCode || "?"} + ${VAK_LABELS[secCode] || secCode || "?"}`, 10, false, [100,100,100]);
       y += 4;
-
-      // PLAN
       if (guide.plan) {
         addSection("Plan d'apprentissage");
-        addText(guide.plan.description, 9, false, [80, 80, 80]);
-        y += 2;
+        addText(guide.plan.description, 9, false, [80,80,80]); y += 2;
         (guide.plan.modules || []).forEach((mod, i) => {
           if (y > 265) { doc.addPage(); y = 20; }
-          doc.setFillColor(240, 252, 250);
-          doc.roundedRect(margin, y - 3, maxW, lineH * 3.5 + 4, 2, 2, "F");
-          addText(`${i + 1}. ${mod.titre}`, 10, true, primary, 3);
-          addText(mod.tache, 9, false, [50, 50, 50], 3);
-          if (mod.comment) addText(mod.comment, 8, false, [120, 120, 120], 3);
-          addText(`Durée : ${mod.duree}`, 8, false, [24, 168, 158], 3);
-          y += 3;
+          doc.setFillColor(240,252,250); doc.roundedRect(margin, y-3, maxW, lineH*3.5+4, 2, 2, "F");
+          addText(`${i+1}. ${mod.titre}`, 10, true, primary, 3);
+          addText(mod.tache, 9, false, [50,50,50], 3);
+          if (mod.comment) addText(mod.comment, 8, false, [120,120,120], 3);
+          addText(`Durée : ${mod.duree}`, 8, false, [24,168,158], 3); y += 3;
         });
       }
-
-      // SESSION
       if (guide.session) {
-        addSection("Structure d'une séance");
-        addText(guide.session.description, 9, false, [80, 80, 80]);
-        y += 2;
+        addSection("Structure d'une séance"); addText(guide.session.description, 9, false, [80,80,80]); y += 2;
         (guide.session.phases || []).forEach(ph => {
           if (y > 265) { doc.addPage(); y = 20; }
-          addText(`${ph.phase} — ${ph.duree} (${ph.profil})`, 10, true, [50, 50, 50], 2);
-          addText(ph.action, 9, false, [50, 50, 50], 4);
-          if (ph.ne_pas) addText(`À éviter : ${ph.ne_pas}`, 8, false, [180, 50, 50], 4);
-          addDivider();
+          addText(`${ph.phase} — ${ph.duree} (${ph.profil})`, 10, true, [50,50,50], 2);
+          addText(ph.action, 9, false, [50,50,50], 4);
+          if (ph.ne_pas) addText(`À éviter : ${ph.ne_pas}`, 8, false, [180,50,50], 4);
+          doc.setDrawColor(220,220,220); doc.line(margin, y, W-margin, y); y += 4;
         });
       }
-
-      // RESSOURCES
       if (guide.ressources) {
-        addSection("Ressources recommandées");
-        addText(guide.ressources.description, 9, false, [80, 80, 80]);
-        y += 2;
+        addSection("Ressources"); addText(guide.ressources.description, 9, false, [80,80,80]); y += 2;
         (guide.ressources.ressources || []).forEach(r => {
           if (y > 265) { doc.addPage(); y = 20; }
-          addText(`[${r.profil}] ${r.type} — ${r.ressource}`, 10, true, [50, 50, 50], 2);
-          addText(r.pourquoi, 9, false, [80, 80, 80], 4);
-          y += 1;
+          addText(`[${r.profil}] ${r.type} — ${r.ressource}`, 10, true, [50,50,50], 2);
+          addText(r.pourquoi, 9, false, [80,80,80], 4); y += 1;
         });
       }
-
-      // TECHNIQUES
       if (guide.techniques) {
-        addSection("Techniques de travail");
-        addText(guide.techniques.description, 9, false, [80, 80, 80]);
-        y += 2;
+        addSection("Techniques"); addText(guide.techniques.description, 9, false, [80,80,80]); y += 2;
         (guide.techniques.techniques || []).forEach(t => {
           if (y > 265) { doc.addPage(); y = 20; }
-          addText(t.technique, 10, true, [50, 50, 50], 2);
-          addText(t.action, 9, false, [80, 80, 80], 4);
-          addText(t.format, 8, false, [120, 120, 120], 4);
-          y += 2;
+          addText(t.technique, 10, true, [50,50,50], 2);
+          addText(t.action, 9, false, [80,80,80], 4);
+          addText(t.format, 8, false, [120,120,120], 4); y += 2;
         });
       }
-
-      // INDICATEURS
       if (guide.indicateurs) {
-        addSection("Indicateurs de maîtrise");
-        addText(guide.indicateurs.description, 9, false, [80, 80, 80]);
-        y += 2;
-        addText("Signes de maîtrise :", 10, true, [50, 50, 50], 2);
-        (guide.indicateurs.signes || []).forEach(s => { addText(`• ${s}`, 9, false, [50, 50, 50], 4); });
-        y += 2;
-        addText("Mini-tests :", 10, true, [50, 50, 50], 2);
-        (guide.indicateurs.mini_tests || []).forEach((mt, i) => { addText(`${i + 1}. ${mt}`, 9, false, [50, 50, 50], 4); });
+        addSection("Indicateurs"); addText(guide.indicateurs.description, 9, false, [80,80,80]); y += 2;
+        addText("Signes :", 10, true, [50,50,50], 2);
+        (guide.indicateurs.signes || []).forEach(s => addText(`• ${s}`, 9, false, [50,50,50], 4)); y += 2;
+        addText("Mini-tests :", 10, true, [50,50,50], 2);
+        (guide.indicateurs.mini_tests || []).forEach((mt, i) => addText(`${i+1}. ${mt}`, 9, false, [50,50,50], 4));
       }
-
       doc.save(`Guide_VAK_${subject.title.replace(/\s+/g, "_")}.pdf`);
-    } catch (err) {
-      console.error("Export PDF error:", err);
-      alert("Erreur lors de l'export PDF. Réessayez.");
-    } finally {
-      setExporting(false);
-    }
+    } catch (err) { alert("Erreur export PDF."); }
+    finally { setExporting(false); }
   };
 
-  if (!subject) return (
-    <div className="sidebar-empty">
-      <span className="material-symbols-outlined">touch_app</span>
-      <p>Sélectionnez un sujet pour voir le guide personnalisé</p>
-    </div>
-  );
+  if (!subject) return null;
 
   return (
-    <div className="guide-sidebar">
-      {/* Header */}
-      <div className="guide-header" style={{ borderTopColor: color }}>
-        <div className="guide-header-top">
-          <div className="guide-profile-badge" style={{ background: color + "18", color }}>
-            <span className="material-symbols-outlined">school</span>
-            {VAK_LABELS[subject.profil_dominant]} + {VAK_LABELS[subject.profil_secondaire]}
+    <div className="guide-panel-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="guide-panel">
+        {/* Panel Header */}
+        <div className="guide-panel-header" style={{ borderTopColor: color }}>
+          <div className="guide-panel-header-top">
+            <div className="guide-panel-left">
+              <div className={`gp-subject-icon ${subject.iconBg || ICON_BG_MAP[subject.icon] || "icon-orange"}`}>
+                <span className="material-symbols-outlined">{subject.icon || "psychology"}</span>
+              </div>
+              <div>
+                <h2 className="gp-subject-title">{subject.title}</h2>
+                <div className="gp-meta">
+                  {domCode && (
+                    <span className="gp-vak-badge" style={{ background: color + "18", color }}>
+                      <span className="material-symbols-outlined">school</span>
+                      {VAK_LABELS[domCode] || domCode}
+                      {secCode && ` · ${VAK_LABELS[secCode] || secCode}`}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="guide-panel-actions">
+              {/* Status selector */}
+              <div className="gp-status-selector">
+                {[
+                  { value: "ajoute",   label: "Ajouté",   icon: "bookmark" },
+                  { value: "en-cours", label: "En cours", icon: "autorenew" },
+                  { value: "termine",  label: "Terminé",  icon: "task_alt" },
+                ].map(s => (
+                  <button key={s.value}
+                    className={`gp-status-btn gp-status-${s.value}${subject.status === s.value ? " gp-status-btn--active" : ""}`}
+                    onClick={() => onStatusChange(subject, s.value)}
+                    title={s.label}>
+                    <span className="material-symbols-outlined">{s.icon}</span>
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+              {guide && (
+                <button className={`gp-export-btn${exporting ? " gp-export-btn--loading" : ""}`}
+                  onClick={exportPDF} disabled={exporting} title="Exporter en PDF">
+                  <span className="material-symbols-outlined">{exporting ? "progress_activity" : "picture_as_pdf"}</span>
+                  {exporting ? "Export…" : "PDF"}
+                </button>
+              )}
+              <button className="gp-close-btn" onClick={onClose} title="Fermer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
           </div>
-          {guide && (
-            <button
-              className={`guide-export-btn${exporting ? " guide-export-btn--loading" : ""}`}
-              onClick={exportPDF}
-              disabled={exporting}
-              title="Exporter en PDF">
-              <span className="material-symbols-outlined">
-                {exporting ? "progress_activity" : "picture_as_pdf"}
-              </span>
-              {exporting ? "Export…" : "PDF"}
-            </button>
+
+          {/* Tabs */}
+          <div className="gp-tabs">
+            {GUIDE_TABS.map((t, i) => (
+              <button key={t.key}
+                className={`gp-tab${activeTab === i ? " gp-tab--active" : ""}`}
+                style={activeTab === i ? { color, borderBottomColor: color } : {}}
+                onClick={() => setActiveTab(i)}>
+                <span className="material-symbols-outlined">{t.icon}</span>
+                <span className="gp-tab-label">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Panel Body */}
+        <div className="guide-panel-body">
+          {loading && <GuideLoading color={color} />}
+          {error   && <GuideError message={error} onRetry={fetchGuide} />}
+          {!loading && !error && guide && (
+            <div className="gp-content">
+              {activeTab === 0 && <PlanSection       data={guide.plan}        color={color} />}
+              {activeTab === 1 && <SessionSection    data={guide.session}     color={color} subject={subject} />}
+              {activeTab === 2 && <RessourcesSection data={guide.ressources}  color={color} />}
+              {activeTab === 3 && <TechniquesSection data={guide.techniques}  color={color} />}
+              {activeTab === 4 && <IndicateursSection data={guide.indicateurs} color={color} />}
+            </div>
           )}
         </div>
-        <h3 className="guide-subject-title">{subject.title}</h3>
-      </div>
-
-      {/* Tabs */}
-      <div className="guide-tabs">
-        {GUIDE_TABS.map((t, i) => (
-          <button key={t.key}
-            className={`guide-tab${activeTab === i ? " guide-tab--active" : ""}`}
-            style={activeTab === i ? { color, borderBottomColor: color } : {}}
-            onClick={() => setActiveTab(i)}>
-            <span className="material-symbols-outlined">{t.icon}</span>
-            <span className="guide-tab-label">{t.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div className="guide-content">
-        {loading && <GuideLoading color={color} />}
-        {error   && <GuideError message={error} onRetry={fetchGuide} />}
-        {!loading && !error && guide && (
-          <>
-            {activeTab === 0 && <PlanSection       data={guide.plan}        color={color} />}
-            {activeTab === 1 && <SessionSection    data={guide.session}     color={color} subject={subject} />}
-            {activeTab === 2 && <RessourcesSection data={guide.ressources}  color={color} />}
-            {activeTab === 3 && <TechniquesSection data={guide.techniques}  color={color} />}
-            {activeTab === 4 && <IndicateursSection data={guide.indicateurs} color={color} />}
-          </>
-        )}
       </div>
     </div>
   );
@@ -436,18 +428,29 @@ function GuideError({ message, onRetry }) {
 
 function PlanSection({ data, color }) {
   if (!data?.modules) return null;
+  const isLast = (i) => i === data.modules.length - 1;
   return (
     <div className="guide-section">
       <p className="guide-section-intro">{data.description}</p>
       <div className="plan-modules">
         {data.modules.map((mod, i) => (
-          <div key={i} className="plan-module">
-            <div className="plan-module-num" style={{ background: color + "18", color }}>{i + 1}</div>
-            <div className="plan-module-body">
+          <div key={i} className="plan-step-wrap">
+            <div className="plan-step-connector">
+              <div className="plan-module-num" style={{ background: color + "18", color }}>{i + 1}</div>
+              {!isLast(i) && <div className="plan-connector-line" />}
+            </div>
+            <div className="plan-module">
               <div className="plan-module-title">{mod.titre}</div>
               <div className="plan-module-task">{mod.tache}</div>
-              <div className="plan-module-duration">
-                <span className="material-symbols-outlined">schedule</span>{mod.duree}
+              <div className="plan-module-footer">
+                {mod.comment && (
+                  <span className="plan-module-how" style={{ background: color + "14", color }}>
+                    {mod.comment}
+                  </span>
+                )}
+                <span className="plan-module-duration">
+                  <span className="material-symbols-outlined">schedule</span>{mod.duree}
+                </span>
               </div>
             </div>
           </div>
@@ -590,9 +593,10 @@ export default function Cours() {
   const [activeFilter,    setActiveFilter]    = useState("Tous");
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [showAddModal,    setShowAddModal]    = useState(false);
+  const [showGuidePanel,  setShowGuidePanel]  = useState(false);
   const [userData,        setUserData]        = useState(null);
+  const [search,          setSearch]          = useState("");
 
-  // Charger les infos utilisateur
   useEffect(() => {
     const userId = getUserId();
     fetch(`http://localhost:8000/get_profile/profile?user_id=${userId}`)
@@ -611,24 +615,30 @@ export default function Cours() {
     navigate("/signin");
   };
 
-  // Charger les sujets depuis l'API au montage
   useEffect(() => {
     apiFetch(`/cours/subjects?user_id=${getUserId()}`)
-      .then(data => {
-        setSubjects(data);
-        if (data.length > 0) setSelectedSubject(data[0]);
-      })
+      .then(data => { setSubjects(data); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = FILTER_MAP[activeFilter] === null
-    ? subjects
-    : subjects.filter(s => s.status === FILTER_MAP[activeFilter]);
+  const filtered = subjects
+    .filter(s => FILTER_MAP[activeFilter] === null || s.status === FILTER_MAP[activeFilter])
+    .filter(s => !search || s.title.toLowerCase().includes(search.toLowerCase()));
+
+  const nbTotal = subjects.length;
+  const nbCours = subjects.filter(s => s.status === "en-cours").length;
+  const nbDone  = subjects.filter(s => s.status === "termine").length;
 
   const handleAdd = s => {
     setSubjects(prev => [s, ...prev]);
     setSelectedSubject(s);
+    setShowGuidePanel(true);
+  };
+
+  const handleSelectSubject = (subject) => {
+    setSelectedSubject(subject);
+    setShowGuidePanel(true);
   };
 
   const handleStatusChange = async (subject, status) => {
@@ -639,7 +649,19 @@ export default function Cours() {
       });
     } catch (_) {}
     setSubjects(prev => prev.map(s => s.id_subject === subject.id_subject ? { ...s, status } : s));
-    if (selectedSubject?.id_subject === subject.id_subject) setSelectedSubject(prev => ({ ...prev, status }));
+    setSelectedSubject(prev => prev?.id_subject === subject.id_subject ? { ...prev, status } : prev);
+  };
+
+  const handleDeleteSubject = async (subject) => {
+    if (!window.confirm(`Supprimer "${subject.title}" et son guide ?`)) return;
+    try {
+      await apiFetch(`/cours/subjects/${subject.id_subject}`, { method: "DELETE" });
+      setSubjects(prev => prev.filter(s => s.id_subject !== subject.id_subject));
+      if (selectedSubject?.id_subject === subject.id_subject) {
+        setShowGuidePanel(false);
+        setSelectedSubject(null);
+      }
+    } catch (_) {}
   };
 
   return (
@@ -648,10 +670,18 @@ export default function Cours() {
         <AddSubjectModal onClose={() => setShowAddModal(false)} onAdd={handleAdd} />
       )}
 
-      {/* NAV — même structure que userspace.jsx */}
+      {showGuidePanel && selectedSubject && (
+        <GuidePanel
+          subject={selectedSubject}
+          onClose={() => setShowGuidePanel(false)}
+          onStatusChange={handleStatusChange}
+        />
+      )}
+
+      {/* NAV */}
       <header className="cours-nav">
         <div className="nav-inner">
-          <div className="nav-brand" onClick={() => navigate("/userspace")} style={{ cursor: "pointer" }}>
+          <div className="nav-brand" onClick={() => navigate("/userspace")}>
             <div className="brand-icon">
               <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
                 <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" />
@@ -662,7 +692,21 @@ export default function Cours() {
           <nav className="nav-links">
             <a href="#" className="nav-link" onClick={e => { e.preventDefault(); navigate("/userspace"); }}>Tableau de bord</a>
             <a href="#" className="nav-link" onClick={e => { e.preventDefault(); navigate("/feedbackpage"); }}>Feedback</a>
-            <a href="#" className="nav-link" onClick={e => { e.preventDefault(); navigate("/quiz-result"); }}>Recommandations</a>
+            <a href="#" className="nav-link" onClick={async e => {
+              e.preventDefault();
+              try {
+                const userId = getUserId();
+                const recRes = await fetch(`http://localhost:8000/recommendation/user/${userId}`);
+                if (!recRes.ok) { navigate("/quiz"); return; }
+                const recData = await recRes.json();
+                let reco = recData.recommendation;
+                if (typeof reco === "string") { reco = JSON.parse(reco); if (typeof reco === "string") reco = JSON.parse(reco); }
+                if (!reco?.sections) { navigate("/quiz"); return; }
+                const profRes = await fetch(`http://localhost:8000/get_profile/profile?user_id=${userId}`);
+                const profData = profRes.ok ? await profRes.json() : {};
+                navigate("/quiz-result", { state: { profile: profData?.profile?.profile_code, recommendations: reco } });
+              } catch (_) { navigate("/quiz"); }
+            }}>Recommandations</a>
             <a href="#" className="nav-link active">Cours</a>
           </nav>
           <div className="nav-actions">
@@ -679,18 +723,40 @@ export default function Cours() {
 
       {/* MAIN */}
       <main className="cours-main">
-        <section className="subjects-section">
-          <div className="section-header">
-            <div>
-              <h2 className="section-title">Mes Apprentissages</h2>
-              <p className="section-subtitle">Gérez vos sujets et consultez vos guides VAK.</p>
-            </div>
-            <button className="btn-add" onClick={() => setShowAddModal(true)}>
-              <span className="material-symbols-outlined">add</span>
-              Ajouter un sujet
-            </button>
+        <div className="page-hero">
+          <div>
+            <h2 className="section-title">Mes apprentissages</h2>
+            <p className="section-subtitle">{nbTotal} sujet{nbTotal !== 1 ? "s" : ""} · {nbCours} en cours · {nbDone} terminé{nbDone !== 1 ? "s" : ""}</p>
           </div>
+          <button className="btn-add" onClick={() => setShowAddModal(true)}>
+            <span className="material-symbols-outlined">add</span>
+            Ajouter un sujet
+          </button>
+        </div>
 
+        {/* Stats */}
+        <div className="stats-row">
+          <div className="stat-card">
+            <div className="stat-icon stat-icon-total"><span className="material-symbols-outlined">folder_open</span></div>
+            <div><div className="stat-val">{nbTotal}</div><div className="stat-lbl">Total</div></div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon stat-icon-cours"><span className="material-symbols-outlined">autorenew</span></div>
+            <div><div className="stat-val" style={{color:"#2563eb"}}>{nbCours}</div><div className="stat-lbl">En cours</div></div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon stat-icon-done"><span className="material-symbols-outlined">task_alt</span></div>
+            <div><div className="stat-val" style={{color:"#16a34a"}}>{nbDone}</div><div className="stat-lbl">Terminés</div></div>
+          </div>
+        </div>
+
+        {/* Search + Filters */}
+        <div className="toolbar-row">
+          <div className="search-wrap">
+            <div className="search-icon"><span className="material-symbols-outlined">search</span></div>
+            <input className="search-input" type="text" placeholder="Rechercher un sujet…"
+              value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
           <div className="filter-row">
             {FILTERS.map(f => (
               <button key={f}
@@ -699,56 +765,79 @@ export default function Cours() {
               </button>
             ))}
           </div>
+        </div>
 
-          <div className="subject-list">
-            {loading ? (
-              <div className="subject-list-empty">
-                <span className="material-symbols-outlined spin">progress_activity</span>
-                <p>Chargement...</p>
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="subject-list-empty">
-                <span className="material-symbols-outlined">inbox</span>
-                <p>{subjects.length === 0 ? "Aucun sujet pour l'instant. Ajoutez votre premier sujet !" : "Aucun sujet dans cette catégorie."}</p>
-                <button className="btn-add" onClick={() => setShowAddModal(true)}>
-                  <span className="material-symbols-outlined">add</span> Ajouter un sujet
-                </button>
-              </div>
-            ) : (
-              filtered.map(subject => (
-                <div key={subject.id_subject}
-                  className={`subject-card${subject.status === "en-cours" ? " subject-card--active" : ""}${selectedSubject?.id_subject === subject.id_subject ? " subject-card--selected" : ""}`}
-                  onClick={() => setSelectedSubject(subject)}>
-                  <div className="subject-card-inner">
-                    <div className="subject-left">
-                      <div className={`subject-icon ${subject.iconBg || ICON_BG_MAP[subject.icon] || "icon-orange"}`}>
-                        <span className="material-symbols-outlined">{subject.icon || "psychology"}</span>
-                      </div>
-                      <div>
-                        <h3 className="subject-title">{subject.title}</h3>
-                        <div className="subject-meta">
-                          <span className={`status-badge status-${subject.status}`}>
-                            {STATUS_LABELS[subject.status]}
-                          </span>
-                          <span className="vak-meta-badge">
-                            {VAK_LABELS[subject.profil_dominant]}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <button className="subject-chevron">
-                      <span className="material-symbols-outlined">chevron_right</span>
+        {/* Subject grid */}
+        {loading ? (
+          <div className="subject-list-empty">
+            <span className="material-symbols-outlined spin">progress_activity</span>
+            <p>Chargement…</p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="subject-list-empty">
+            <span className="material-symbols-outlined">inbox</span>
+            <p>{subjects.length === 0 ? "Aucun sujet pour l'instant. Ajoutez votre premier sujet !" : "Aucun résultat pour ce filtre."}</p>
+            {subjects.length === 0 && (
+              <button className="btn-add" onClick={() => setShowAddModal(true)}>
+                <span className="material-symbols-outlined">add</span> Ajouter un sujet
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="subject-grid">
+            {filtered.map(subject => (
+              <div key={subject.id_subject}
+                className={`subject-card${subject.status === "en-cours" ? " subject-card--active" : ""}${selectedSubject?.id_subject === subject.id_subject ? " subject-card--selected" : ""}`}
+                onClick={() => handleSelectSubject(subject)}>
+                <div className="sc-top">
+                  <div className={`subject-icon ${subject.iconBg || ICON_BG_MAP[subject.icon] || "icon-orange"}`}>
+                    <span className="material-symbols-outlined">{subject.icon || "psychology"}</span>
+                  </div>
+                  <div className="sc-actions">
+                    <button className="sc-delete-btn" title="Supprimer"
+                      onClick={e => { e.stopPropagation(); handleDeleteSubject(subject); }}>
+                      <span className="material-symbols-outlined">delete_outline</span>
                     </button>
                   </div>
                 </div>
-              ))
-            )}
+                <div className="sc-body">
+                  <h3 className="subject-title">{subject.title}</h3>
+                  <div className="subject-meta">
+                    <span className={`status-badge status-${subject.status}`}>{STATUS_LABELS[subject.status]}</span>
+                  </div>
+                  <div className="subject-progress">
+                    <div className="progress-track">
+                      <div className="progress-fill" style={{width: `${progressValue(subject.status)}%`}} />
+                    </div>
+                    <span className="progress-pct">{progressValue(subject.status)}%</span>
+                  </div>
+                </div>
+                <div className="sc-footer">
+                  <span className="subject-date">{relativeDate(subject.created_at)}</span>
+                  <div className="sc-status-pills">
+                    {["ajoute","en-cours","termine"].map(s => (
+                      <button key={s}
+                        className={`sc-status-pill sc-sp-${s}${subject.status === s ? " sc-sp--active" : ""}`}
+                        title={STATUS_LABELS[s]}
+                        onClick={e => { e.stopPropagation(); handleStatusChange(subject, s); }}>
+                        {STATUS_LABELS[s]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="sc-open-hint">
+                  <span className="material-symbols-outlined">open_in_full</span>
+                  Ouvrir le guide
+                </div>
+              </div>
+            ))}
+            {/* Add card */}
+            <div className="subject-card-add" onClick={() => setShowAddModal(true)}>
+              <span className="material-symbols-outlined">add_circle</span>
+              <span>Ajouter un sujet</span>
+            </div>
           </div>
-        </section>
-
-        <aside className="cours-sidebar">
-          <GuideSidebar subject={selectedSubject} />
-        </aside>
+        )}
       </main>
     </div>
   );

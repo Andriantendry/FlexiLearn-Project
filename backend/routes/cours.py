@@ -273,9 +273,20 @@ def delete_subject(subject_id: int, db: Session = Depends(get_db)):
     if not subject:
         raise HTTPException(status_code=404, detail="Sujet introuvable")
 
-    db.delete(subject)
-    db.commit()
-    return {"success": True, "message": "Sujet supprimé"}
+    try:
+        # Supprimer le guide d'abord (contrainte NOT NULL sur subject_id)
+        guide = db.query(Guide).filter(Guide.subject_id == subject_id).first()
+        if guide:
+            db.delete(guide)
+            db.flush()
+
+        db.delete(subject)
+        db.commit()
+        return {"success": True, "message": "Sujet supprimé"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression : {str(e)}")
 
 
 # ── Routes guides ─────────────────────────────────────────────────────────────
@@ -315,7 +326,7 @@ def get_or_generate_guide(subject_id: int, db: Session = Depends(get_db)):
         )
         client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", ""))
         response = client.models.generate_content(
-            model="gemini-3-flash-preview",
+            model="gemini-2.0-flash-lite",
             contents=prompt,
         )
         raw = response.text.strip().replace("```json", "").replace("```", "").strip()
