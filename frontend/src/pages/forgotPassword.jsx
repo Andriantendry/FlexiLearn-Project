@@ -33,7 +33,7 @@ export default function ForgotPassword() {
         method: "POST",
       });
 
-      alert("Code envoyé (voir dans le terminal)!");
+      alert("Code envoyé");
       navigate(`/reset-password?email=${email}`);
     } catch (err) {
       setError("Erreur serveur");

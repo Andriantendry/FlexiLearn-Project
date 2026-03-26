@@ -39,3 +39,31 @@ L’équipe FlexiLearn
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         server.send_message(msg)
 
+def send_reset_email(to_email, code):
+    msg = EmailMessage()
+    msg["Subject"] = "Réinitialisation de mot de passe"
+    msg["From"] = EMAIL_ADDRESS
+    msg["To"] = to_email
+
+    msg.set_content(f"""
+Bonjour,
+
+Vous avez demandé la réinitialisation de votre mot de passe sur FlexiLearn.
+
+Utilisez le code ci-dessous pour définir un nouveau mot de passe :
+
+========================
+   CODE DE RÉINITIALISATION
+        {code}
+========================
+
+⏳ Ce code expire rapidement.
+Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.
+
+Sécurité FlexiLearn 🔐
+""")
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        server.send_message(msg)

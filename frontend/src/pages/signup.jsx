@@ -27,14 +27,18 @@ function LeftPanel({ mode = "signup" }) {
       {/* Particules décoratives */}
       <div className="lp-particles" aria-hidden="true">
         {[...Array(16)].map((_, i) => (
-          <div key={i} className="lp-particle" style={{
-            left:              `${(i * 41 + 13) % 90 + 5}%`,
-            top:               `${(i * 67 + 9)  % 85 + 5}%`,
-            width:             `${(i % 3) + 4}px`,
-            height:            `${(i % 3) + 4}px`,
-            animationDuration: `${4 + (i % 3)}s`,
-            animationDelay:    `${(i * 0.22) % 2.5}s`,
-          }} />
+          <div
+            key={i}
+            className="lp-particle"
+            style={{
+              left: `${((i * 41 + 13) % 90) + 5}%`,
+              top: `${((i * 67 + 9) % 85) + 5}%`,
+              width: `${(i % 3) + 4}px`,
+              height: `${(i % 3) + 4}px`,
+              animationDuration: `${4 + (i % 3)}s`,
+              animationDelay: `${(i * 0.22) % 2.5}s`,
+            }}
+          />
         ))}
       </div>
 
@@ -55,14 +59,24 @@ function LeftPanel({ mode = "signup" }) {
           <div className="lp-name">
             <div className="lp-word">
               {"FLEXI".split("").map((c, i) => (
-                <span key={i} className="lp-letter lp-teal"
-                  style={{ animationDelay: `${i * 0.08}s` }}>{c}</span>
+                <span
+                  key={i}
+                  className="lp-letter lp-teal"
+                  style={{ animationDelay: `${i * 0.08}s` }}
+                >
+                  {c}
+                </span>
               ))}
             </div>
             <div className="lp-word">
               {"LEARN".split("").map((c, i) => (
-                <span key={i} className="lp-letter lp-grad"
-                  style={{ animationDelay: `${0.4 + i * 0.08}s` }}>{c}</span>
+                <span
+                  key={i}
+                  className="lp-letter lp-grad"
+                  style={{ animationDelay: `${0.4 + i * 0.08}s` }}
+                >
+                  {c}
+                </span>
               ))}
             </div>
           </div>
@@ -78,11 +92,19 @@ function LeftPanel({ mode = "signup" }) {
       {/* Lien vers l'autre page — aligné horizontalement avec le titre */}
       <p className="lp-foot">
         {mode === "signin" ? (
-          <>Pas encore de compte ?{" "}
-            <Link to="/signup" className="lp-link">S'inscrire</Link></>
+          <>
+            Pas encore de compte ?{" "}
+            <Link to="/signup" className="lp-link">
+              S'inscrire
+            </Link>
+          </>
         ) : (
-          <>Déjà un compte ?{" "}
-            <Link to="/signin" className="lp-link">Se connecter</Link></>
+          <>
+            Déjà un compte ?{" "}
+            <Link to="/signin" className="lp-link">
+              Se connecter
+            </Link>
+          </>
         )}
       </p>
     </div>
@@ -137,7 +159,9 @@ export default function SignUp() {
       <div className="signin-right">
         <div className="title">
           <h2>Créer un compte</h2>
-          <p className="info">Inscrivez-vous avec votre adresse e-mail et mot de passe</p>
+          <p className="info">
+            Inscrivez-vous avec votre adresse e-mail et mot de passe
+          </p>
         </div>
 
         <form className="signin-form" onSubmit={handleLogin} autoComplete="off">
@@ -179,7 +203,11 @@ export default function SignUp() {
               autoComplete="off"
             />
             <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
-              <img src={showPwd ? eye_icone : eye_hide_icone} alt="toggle" className="pwd-icon" />
+              <img
+                src={showPwd ? eye_icone : eye_hide_icone}
+                alt="toggle"
+                className="pwd-icon"
+              />
             </span>
           </div>
 
@@ -195,7 +223,11 @@ export default function SignUp() {
               autoComplete="off"
             />
             <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
-              <img src={showPwd ? eye_icone : eye_hide_icone} alt="toggle" className="pwd-icon" />
+              <img
+                src={showPwd ? eye_icone : eye_hide_icone}
+                alt="toggle"
+                className="pwd-icon"
+              />
             </span>
           </div>
 
@@ -204,13 +236,6 @@ export default function SignUp() {
               Les mots de passe ne correspondent pas
             </p>
           )}
-
-          <div className="options">
-            <label>
-              <input type="checkbox" defaultChecked={false} /> Se souvenir de moi
-            </label>
-            <a href="#" className="forgot-link underline-link">Mot de passe oublié ?</a>
-          </div>
 
           <button className="login-btn" disabled={loading}>
             {loading ? "..." : "S'INSCRIRE"}

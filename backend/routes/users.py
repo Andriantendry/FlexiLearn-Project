@@ -7,7 +7,7 @@ from schemas import UserSchema ,UserLoginSchema,VerifyCodeSchema,ResetPasswordSc
 from models_db import User
 import smtplib
 from utils.hashing import hash_password,verify_password, check_email_domain,generate_4_digit_code 
-from utils.mail import send_verification_email
+from utils.mail import send_verification_email, send_reset_email
 
 router=APIRouter(
     prefix="/user", #toutes les routes commences par /user/
@@ -117,14 +117,16 @@ def forgot_password(email: str, db: Session = Depends(get_db)):
     if not user:
         return {"message": "Si cet email existe, un code a été envoyé"}
 
-    # code simple à 6 chiffres
-    code = str(random.randint(100000, 999999))
+    code = generate_4_digit_code()
 
     user.verification_code = code
     db.commit()
 
-    # simulation email (important)
-    print(f"Code de reset pour {email}: {code}")
+    try:
+        send_reset_email(user.email, code)
+    except Exception as e:
+        print("Erreur envoi mail:", e)
+        print(f"[FALLBACK] Code pour {user.email}: {code}")
 
     return {"message": "Code envoyé"}
 
