@@ -1,8 +1,9 @@
 from fastapi import APIRouter,Depends,HTTPException
 from sqlalchemy.orm import Session 
 import logging
+import random
 from database import get_db 
-from schemas import UserSchema ,UserLoginSchema,VerifyCodeSchema
+from schemas import UserSchema ,UserLoginSchema,VerifyCodeSchema,ResetPasswordSchema
 from models_db import User
 import smtplib
 from utils.hashing import hash_password,verify_password, check_email_domain,generate_4_digit_code 
@@ -49,16 +50,17 @@ def create_user(user : UserSchema, db :Session = Depends(get_db)):
         detail="Impossible d'envoyer le mail : erreur serveur de messagerie"
     )
     
-    except Exception as e : 
-        print(e)
-        raise
-        """
-    except Exception:
+    except smtplib.SMTPRecipientsRefused:
         raise HTTPException(
-        status_code=500,
-        detail="Impossible d'envoyer le mail. Vérifie l'adresse ou réessaie plus tard."
-    )
-    """
+            status_code=400,
+            detail="Adresse email invalide"
+        )
+    except Exception as e:
+        print("Erreur inconnue:", e)
+        raise HTTPException(
+            status_code=500,
+            detail="Erreur inattendue lors de l'envoi du mail"
+        )
 
     
     db.add(db_user)
@@ -106,3 +108,43 @@ def verify_code(data: VerifyCodeSchema, db: Session = Depends(get_db)):
         "email": user.email,
         "username": user.username
     }
+
+
+@router.post("/forgot-password")
+def forgot_password(email: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        return {"message": "Si cet email existe, un code a été envoyé"}
+
+    # code simple à 6 chiffres
+    code = str(random.randint(100000, 999999))
+
+    user.verification_code = code
+    db.commit()
+
+    # simulation email (important)
+    print(f"Code de reset pour {email}: {code}")
+
+    return {"message": "Code envoyé"}
+
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordSchema, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+
+    if user.verification_code != data.code:
+        raise HTTPException(status_code=400, detail="Code invalide")
+
+    # changer mot de passe
+    user.password = hash_password(data.new_password)
+
+    # supprimer code
+    user.verification_code = None
+
+    db.commit()
+
+    return {"message": "Mot de passe modifié"}

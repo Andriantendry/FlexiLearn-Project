@@ -75,5 +75,7 @@ class Guide(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     subject = relationship("Subject", back_populates="guides")
+    
+
 
     

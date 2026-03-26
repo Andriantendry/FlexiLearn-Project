@@ -26,14 +26,18 @@ function LeftPanel({ mode = "signin" }) {
       {/* Particules décoratives */}
       <div className="lp-particles" aria-hidden="true">
         {[...Array(16)].map((_, i) => (
-          <div key={i} className="lp-particle" style={{
-            left:              `${(i * 41 + 13) % 90 + 5}%`,
-            top:               `${(i * 67 + 9)  % 85 + 5}%`,
-            width:             `${(i % 3) + 4}px`,
-            height:            `${(i % 3) + 4}px`,
-            animationDuration: `${4 + (i % 3)}s`,
-            animationDelay:    `${(i * 0.22) % 2.5}s`,
-          }} />
+          <div
+            key={i}
+            className="lp-particle"
+            style={{
+              left: `${((i * 41 + 13) % 90) + 5}%`,
+              top: `${((i * 67 + 9) % 85) + 5}%`,
+              width: `${(i % 3) + 4}px`,
+              height: `${(i % 3) + 4}px`,
+              animationDuration: `${4 + (i % 3)}s`,
+              animationDelay: `${(i * 0.22) % 2.5}s`,
+            }}
+          />
         ))}
       </div>
 
@@ -54,14 +58,24 @@ function LeftPanel({ mode = "signin" }) {
           <div className="lp-name">
             <div className="lp-word">
               {"FLEXI".split("").map((c, i) => (
-                <span key={i} className="lp-letter lp-teal"
-                  style={{ animationDelay: `${i * 0.08}s` }}>{c}</span>
+                <span
+                  key={i}
+                  className="lp-letter lp-teal"
+                  style={{ animationDelay: `${i * 0.08}s` }}
+                >
+                  {c}
+                </span>
               ))}
             </div>
             <div className="lp-word">
               {"LEARN".split("").map((c, i) => (
-                <span key={i} className="lp-letter lp-grad"
-                  style={{ animationDelay: `${0.4 + i * 0.08}s` }}>{c}</span>
+                <span
+                  key={i}
+                  className="lp-letter lp-grad"
+                  style={{ animationDelay: `${0.4 + i * 0.08}s` }}
+                >
+                  {c}
+                </span>
               ))}
             </div>
           </div>
@@ -77,11 +91,19 @@ function LeftPanel({ mode = "signin" }) {
       {/* Lien vers l'autre page — aligné horizontalement avec le titre */}
       <p className="lp-foot">
         {mode === "signin" ? (
-          <>Pas encore de compte ?{" "}
-            <Link to="/signup" className="lp-link">S'inscrire</Link></>
+          <>
+            Pas encore de compte ?{" "}
+            <Link to="/signup" className="lp-link">
+              S'inscrire
+            </Link>
+          </>
         ) : (
-          <>Déjà un compte ?{" "}
-            <Link to="/signin" className="lp-link">Se connecter</Link></>
+          <>
+            Déjà un compte ?{" "}
+            <Link to="/signin" className="lp-link">
+              Se connecter
+            </Link>
+          </>
         )}
       </p>
     </div>
@@ -109,11 +131,12 @@ export default function SignIn() {
       const userId = data.user_id || data.user?.id || data.id;
       if (userId) {
         localStorage.setItem("user_id", userId);
-        alert("Connexion réussie ! Prêt à découvrir ton style d'apprentissage ? 🚀");
+        alert(
+          "Connexion réussie ! Prêt à découvrir ton style d'apprentissage ? 🚀"
+        );
         navigate("/userspace");
-      } else {
-        alert("Connexion réussie, mais identifiant manquant. Contacte le support.");
-      }
+      } 
+      
       if (!res.ok) alert("Échec de la connexion");
     } catch (error) {
       console.error("Erreur :", error);
@@ -128,7 +151,9 @@ export default function SignIn() {
       <div className="signin-right">
         <div className="title">
           <h2>Bienvenue</h2>
-          <p className="info">Connectez-vous avec votre adresse e-mail et mot de passe</p>
+          <p className="info">
+            Connectez-vous avec votre adresse e-mail et mot de passe
+          </p>
         </div>
 
         <form className="signin-form" onSubmit={handleLogin} autoComplete="off">
@@ -157,7 +182,11 @@ export default function SignIn() {
               autoComplete="off"
             />
             <span className="toggle-pwd" onClick={() => setShowPwd(!showPwd)}>
-              <img src={showPwd ? eye_icone : eye_hide_icone} alt="toggle" className="pwd-icon" />
+              <img
+                src={showPwd ? eye_icone : eye_hide_icone}
+                alt="toggle"
+                className="pwd-icon"
+              />
             </span>
           </div>
 
@@ -165,7 +194,9 @@ export default function SignIn() {
             <label>
               <input type="checkbox" /> Se souvenir de moi
             </label>
-            <a href="#" className="forgot-link underline-link">Mot de passe oublié ?</a>
+            <Link to="/forgot-password" className="forgot-link underline-link">
+              Mot de passe oublié ?
+            </Link>
           </div>
 
           <button className="login-btn">CONNEXION</button>

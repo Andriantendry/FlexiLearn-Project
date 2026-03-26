@@ -4,6 +4,7 @@ from database import get_db
 from models_db import Subject, Guide, Profile
 from pydantic import BaseModel
 from typing import Optional
+from schemas import SubjectCreate, SubjectResponse,SubjectUpdate,GuideResponse
 from datetime import datetime
 import json
 import os
@@ -30,40 +31,6 @@ def to_vak_code(val: str) -> str:
     return VAK_CODE.get(val, val[0].upper() if val else "V")
 
 
-# ── Schemas ───────────────────────────────────────────────────────────────────
-
-class SubjectCreate(BaseModel):
-    user_id: int
-    title: str
-    status: Optional[str] = "ajoute"
-
-
-class SubjectUpdate(BaseModel):
-    title: Optional[str] = None
-    status: Optional[str] = None
-
-
-class SubjectResponse(BaseModel):
-    id_subject: int
-    user_id: int
-    title: str
-    status: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class GuideResponse(BaseModel):
-    id_guide: int
-    subject_id: int
-    profil_dominant: str
-    profil_secondaire: str
-    contenu: Optional[dict]
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 # ── Prompt VAK ────────────────────────────────────────────────────────────────
@@ -326,7 +293,7 @@ def get_or_generate_guide(subject_id: int, db: Session = Depends(get_db)):
         )
         client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", ""))
         response = client.models.generate_content(
-            model="gemini-2.0-flash-lite",
+            model="gemini-3-flash-preview",
             contents=prompt,
         )
         raw = response.text.strip().replace("```json", "").replace("```", "").strip()

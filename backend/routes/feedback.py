@@ -4,34 +4,13 @@ from database import get_db
 from models_db import Feedback
 from pydantic import BaseModel, EmailStr
 from typing import Optional
+from schemas import FeedbackOut,FeedbackResponse,FeedbackSubmit
 from datetime import datetime
 
 router = APIRouter(
     prefix="/feedback",
     tags=["feedback"]
 )
-
-class FeedbackSubmit(BaseModel):
-    user_id: Optional[int] = None
-    rating: int
-    category: str
-    feedback_text: str
-    email: Optional[str] = None
-    method_helpfulness: Optional[str] = None
-    created_at: Optional[str] = None
-
-class FeedbackResponse(BaseModel):
-    id_feedback: int  # ✅ Changé de 'id' à 'id_feedback'
-    user_id: Optional[int]
-    rating: int
-    category: str
-    feedback_text: str
-    email: Optional[str]
-    method_helpfulness: Optional[str] = None
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
 
 
 @router.post("/submit", response_model=dict)
