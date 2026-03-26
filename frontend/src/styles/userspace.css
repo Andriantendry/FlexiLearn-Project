@@ -16,7 +16,7 @@
 /* Main Container */
 .userspace-page {
   min-height: 100vh;
-  background-color: #f5f6f8;
+    background: url(../assets/images/quiz_background.png) center/cover;
   color: #111418;
   transition: background-color 0.2s, color 0.2s;
   font-family: 'Lexend', sans-serif;

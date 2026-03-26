@@ -35,7 +35,7 @@ body:has(.admin-panel) #root {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background-color: #edf7f4;
+  background: url(../assets/images/quiz_background.png) center/cover;
 }
 
 .admin-container {
@@ -242,6 +242,7 @@ body:has(.admin-panel) #root {
 
 /* Content */
 .admin-content {
+    background: url(../assets/images/quiz_background.png) center/cover;
   padding: 2rem;
   display: flex;
   flex-direction: column;

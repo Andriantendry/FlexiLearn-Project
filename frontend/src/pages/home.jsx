@@ -11,19 +11,19 @@ export default function Home() {
         </div>
 
         <nav>
-          <a href="#">Home</a>
-          <a href="#">About</a>
-          <a href="#">Features</a>
-          <a href="#">Contact</a>
+          <Link to="/" className="nav-link active">Accueil</Link>
+          <Link to="/about" className="nav-link">À propos</Link>
+          <Link to="/equipe-page" className="nav-link">Équipe</Link>
         </nav>
+          
       </header>
 
       <main className="hero">
         <div className="hero-left">
-          <h1>Personalized Learning Platform</h1>
-          <p>Adaptive learning to suit your style and pace</p>
+          <h1>Platforme d'apprentissage personnalisée</h1>
+          <p>Un apprentissage adapté à votre style et à votre rythme</p>
           <Link to="/signup" className="cta-btn">
-            Get Started
+            Commencer
           </Link>
         </div>
 
@@ -38,22 +38,22 @@ export default function Home() {
       <section className="features">
         <div className="feature-card">
           <img src="https://cdn-icons-png.flaticon.com/512/943/943277.png" />
-          <h3>Assess Learning Style</h3>
+          <h3>Évaluer votre style d'apprentissage</h3>
           <p>
-            Determine your preferred learning approach through interactive tests
+            Déterminez votre meilleure approche d'apprentissage grâce à des tests interactifs
           </p>
         </div>
 
         <div className="feature-card">
           <img src="https://cdn-icons-png.flaticon.com/512/906/906343.png" />
-          <h3>Tailored Recommendation</h3>
-          <p>Receive custom learning resources based on your style</p>
+          <h3>Recommandations personnalisées</h3>
+          <p>Recevez des ressources d'apprentissage sur mesure en fonction de votre style</p>
         </div>
 
         <div className="feature-card">
           <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" />
-          <h3>Track Progress</h3>
-          <p>Monitor your learning progress and adjust as needed</p>
+          <h3>Suivi des progrès</h3>
+          <p>Suivez votre progression et ajustez-vous si nécessaire</p>
         </div>
       </section>
     </div>

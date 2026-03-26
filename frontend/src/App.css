@@ -17,63 +17,6 @@ body {
   text-align: left !important;
 }
 
-.signin-container {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-}
-
-/* === LEFT PANEL === */
-.signin-left {
-  width: 50%;
-  padding: 40px 60px;
-  background: #f5f7ff;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  box-sizing: border-box;
-}
-
-.brand {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 5px;
-  color: #1b1b1b;
-}
-
-.brand span {
-  color: #4a63e7;
-}
-
-.subtitle {
-  color: #333;
-  margin-top: 10px;
-  margin-bottom: 0px;
-  font-size: 15px;
-  font-weight: 400;
-}
-
-.illustration {
-  width: 75%;
-  max-height: 50vh;
-  object-fit: contain;
-  align-self: center;
-  margin-top: 40px;
-}
-
-.signup-left {
-  margin-top: auto;
-  font-size: 15px;
-  color: #333;
-  gap: 10px;
-}
-
-.signup-left Link {
-  color: #8358f8;
-  text-decoration: none;
-  font-weight: 600;
-}
-
 /* === RIGHT PANEL === */
 .signin-right {
   width: 50%;
@@ -84,16 +27,6 @@ body {
   justify-content: center;
   box-sizing: border-box;
   overflow: visible !important;
-}
-
-.signin-wrapper {
-  max-width: 500px !important;
-  width: auto !important;
-  margin: 0 60px !important;
-  background: white;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .signin-logo {

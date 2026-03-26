@@ -25,25 +25,24 @@ body {
 ================================ */
 .landing-container {
   background: url(../assets/images/quiz_background.png) center/cover;
-  width: 100vw;
-  min-height: 100vh
+  width: 100%;
+  min-height: 100vh;min-height: 100vh
+  
 }
 
-/* ================================
-   NAVBAR
-================================ */
 .navbar {
   box-shadow: -12px 14px 7px 0px rgb(0 0 0 / 21%);
   display: flex;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
   background: #ffffffde;
-  height: 80px;
-  padding: 0 100px;
-  display: flex;
+  min-height: 80px;
+  padding: 0 clamp(1.25rem, 5vw, 6.25rem); /* ← remplace les 100px fixes */
   color: #18534F;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;           /* ← laisse les éléments passer à la ligne */
+  gap: 12px;
 }
 
 .logo {
@@ -52,20 +51,39 @@ body {
   gap: 10px;
   font-size: 20px;
   font-weight: 600;
+  flex-shrink: 0;            /* ← le logo ne rétrécit jamais */
 }
 
 .navbar nav {
-
   display: flex;
-  gap: 40px;
+  flex-wrap: wrap;           /* ← les liens passent à la ligne si besoin */
+  gap: 12px;                 /* ← réduit depuis 40px */
 }
 
-.navbar nav a {
-  font-size: 15px;
-  font-weight: 500;
-  color: #111827;
+.navbar nav .nav-link {
+  display: inline-block;
+  padding: 10px 18px;
+  border-radius: 40px;
   text-decoration: none;
+  font-weight: 500;
+  font-size: clamp(0.8rem, 2vw, 1rem); /* ← taille fluide */
+  white-space: nowrap;       /* ← texte du bouton ne coupe jamais */
+  color: #fffffffb;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #2d9992, #18534F);
 }
+
+.navbar nav .nav-link:hover {
+  background: #72ecdab2;
+  color: black;
+}
+
+.navbar nav .nav-link.active {
+  background: #72ecdab2;
+  color: rgb(18, 12, 12);
+}
+
+
 
 /* ================================
    HERO (SECTION PRINCIPALE)
@@ -92,14 +110,15 @@ body {
 
 .hero-left h1 {
   text-align: center;
-  font-size: 60px;
   max-width: 580px;
   font-weight: 800;
   color: #324241;
+  font-size: 60px;
   line-height: 1.1;
 }
 
 .hero-left p {
+  text-align: center;
   margin: 24px 0;
   font-size: 19px;
   color: #18534F;
@@ -122,7 +141,8 @@ body {
 
 .cta-btn:hover {
   transform: translateY(-2px);
-  color: #18534F;
+  color: #151d1c;
+   background: #72ecdab2;
 }
 
 .hero-right {
@@ -140,10 +160,7 @@ body {
    FEATURES
 ================================ */
 .features {
-  padding-left: 60px;
-  padding-right: 60px;
-  padding-bottom: 24px;
-  padding-top:60px;
+  padding:10px 60px 24px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 60px;
@@ -152,13 +169,13 @@ body {
 .feature-card {
   padding-top: 12px;
   padding-bottom: 12px;
-  background-color: #ffffffde;
-  box-shadow: -12px 14px 7px 0px rgb(0 0 0 / 21%);
   display: flex;
   text-align: center;
   flex-direction: column;
   align-items: center;
-   border-radius: 15px;
+  background-color: #ffffffde;
+  box-shadow: -12px 14px 7px 0px rgb(0 0 0 / 21%);
+  border-radius: 15px;
  ;
 }
 
@@ -190,6 +207,18 @@ body {
   .features {
     padding-left: 60px;
     padding-right: 60px;
+  }
+}
+
+/* Sur très petit écran, centrer logo + nav */
+@media (max-width: 480px) {
+  .navbar {
+    justify-content: center;
+    padding: 12px 1.25rem;
+  }
+
+  .navbar nav {
+    justify-content: center;
   }
 }
 

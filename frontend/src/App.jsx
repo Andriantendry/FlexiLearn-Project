@@ -14,12 +14,16 @@ import UserSpace from "./pages/userspace";
 import Cours from "./pages/cours.jsx";
 import ResetPassword from "./pages/resetPassword.jsx";
 import ForgotPassword from "./pages/forgotPassword.jsx";
+import Equipe from './pages/equipes.jsx';
+import About from './pages/about';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
+         <Route path="/equipe-page" element={<Equipe />} />
+        <Route path="/about" element={<About />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/signin" element={<SigninPage />} />
         <Route path="/user-page" element={<UserPage />} />

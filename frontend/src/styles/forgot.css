@@ -3,25 +3,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  background: url(../assets/images/quiz_background.png) center/cover;
 }
 
 .forgot-box {
-  background: #111827;
-  padding: 40px;
+  background: #ffffffde;
+  box-shadow: 0 0 10px 10px rgb(26 35 119 / 21%);
+  padding: 80px;
   border-radius: 16px;
-  width: 350px;
+  width: 600px;
   text-align: center;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  
 }
 
 .forgot-box h2 {
-  color: #38bdf8;
+    font-size: 2rem;
+  color: #18534F;
   margin-bottom: 10px;
 }
 
 .forgot-box p {
-  color: #9ca3af;
+  color: #5f636a;
   margin-bottom: 20px;
 }
 
@@ -31,8 +33,8 @@
   margin-bottom: 15px;
   border: none;
   border-radius: 8px;
-  background: #1f2937;
-  color: white;
+  background: #d0dbea;
+  color: rgb(14, 8, 8);
 }
 
 .forgot-box button {
@@ -40,7 +42,7 @@
   padding: 12px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(90deg, #06b6d4, #3dd456);
+  background: linear-gradient(135deg, #32a49c, #18534F);
   color: white;
   font-weight: bold;
   cursor: pointer;
@@ -49,6 +51,9 @@
 
 .forgot-box button:hover {
   transform: scale(1.05);
+  color: #151d1c;
+  background: #72ecdab2;
+
 }
 button:disabled {
   opacity: 0.5;
