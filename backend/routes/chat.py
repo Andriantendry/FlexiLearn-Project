@@ -101,7 +101,7 @@ Analyse et recommandations demandées :
    - Conseils pratiques pour chaque étape
 5. Fournis des recommandations concrètes et applicables, sous forme de liste ou d’étapes.
 
-⚠️ **IMPORTANT** : Réponds **uniquement en JSON**, avec exactement cette structure :
+**IMPORTANT** : Réponds **uniquement en JSON**, avec exactement cette structure :
 
 {{
   "sections": [
@@ -151,7 +151,7 @@ def answer_chat(req: AnswerRequest):
             total=len(questions)
         )
 
-    # Fin du chat → Gemini analyse
+    #Gemini analyse
     prompt = build_analysis_prompt(profile, session["answers"])
     try:
         response = client.models.generate_content(

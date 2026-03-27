@@ -14,9 +14,9 @@ router = APIRouter(
     tags=["admin"]
 )
 
-# ============================================
+
 # SCHEMAS
-# ============================================
+
 
 class AdminStats(BaseModel):
     total_users: int
@@ -57,18 +57,16 @@ class FeedbackResponse(BaseModel):
 class UpdateUserRoleRequest(BaseModel):
     role: str
 
-# ============================================
+
 # ENDPOINTS - STATISTIQUES
-# ============================================
+
 
 @router.get("/stats", response_model=AdminStats)
 def get_admin_stats(
     user_id: int,
     db: Session = Depends(get_db)
 ):
-    """
-    Récupère les statistiques globales
-    """
+    """ Récupère les statistiques globales """
     verify_admin(user_id, db)
     
     total_users = db.query(User).count()
@@ -77,7 +75,7 @@ def get_admin_stats(
     total_profiles = db.query(Profile).count()
     total_feedbacks = db.query(Feedback).count()
     
-    # ✅ Compter par profil dominant (première lettre du code)
+    # Compter par profil dominant (première lettre du code)
     profiles_by_type = {}
     all_profiles = db.query(Profile).all()
     
@@ -111,9 +109,9 @@ def get_admin_stats(
         users_by_role=users_by_role
     )
 
-# ============================================
+
 # ENDPOINTS - GESTION DES UTILISATEURS
-# ============================================
+
 
 @router.get("/users", response_model=List[UserResponse])
 def get_all_users(
@@ -124,9 +122,7 @@ def get_all_users(
     verified_only: Optional[bool] = None,
     db: Session = Depends(get_db)
 ):
-    """
-    Récupère la liste de tous les utilisateurs
-    """
+    """ Récupère la liste de tous les utilisateurs """
     verify_admin(user_id, db)
     
     query = db.query(User).outerjoin(Profile)
@@ -145,7 +141,7 @@ def get_all_users(
     
     result = []
     for user in users:
-        # ✅ Extraire la première lettre du profile_code OU utiliser profil_dominant
+        #  Extraire la première lettre du profile_code OU utiliser profil_dominant
         profile_letter = None
         if user.profile:
             if user.profile.profile_code:
@@ -164,7 +160,7 @@ def get_all_users(
             "is_verified": user.is_verified,
             "created_at": user.create_at,
             "has_profile": user.profile is not None,
-            "profile_type": profile_letter  # ✅ Retourne "V", "A" ou "K"
+            "profile_type": profile_letter  # Retourne "V", "A" ou "K"
         }
         result.append(UserResponse(**user_data))
     
@@ -292,9 +288,9 @@ def delete_user(
         "deleted_user_id": target_user_id
     }
 
-# ============================================
+
 # ENDPOINTS - GESTION DES FEEDBACKS
-# ============================================
+
 
 @router.get("/feedbacks", response_model=List[FeedbackResponse])
 def get_all_feedbacks(
@@ -361,9 +357,9 @@ def delete_feedback(
         "deleted_feedback_id": feedback_id
     }
 
-# ============================================
+
 # ENDPOINTS - ANALYTICS
-# ============================================
+
 
 @router.get("/analytics/profile-distribution")
 def get_profile_distribution(

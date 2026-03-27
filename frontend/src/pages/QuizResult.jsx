@@ -1,12 +1,36 @@
 import React, { useState } from "react"; 
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/quiz-result.css";
+import CustomAlert from "../components/CustomAlert";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function QuizResult() {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, recommendations } = location.state || {};
   const [activeStep, setActiveStep] = useState(0);
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
+  const [confirm, setConfirm] = useState({ show: false, message: "", action: null, data: null });
+
+  // Fermer l'alerte
+  const closeAlert = () => {
+    setAlert({ ...alert, show: false });
+  };
+
+  // Fermer la confirmation
+  const closeConfirm = () => {
+    setConfirm({ show: false, message: "", action: null, data: null });
+  };
+
+  // Fermeture automatique pour les messages de succès après 3 secondes
+  React.useEffect(() => {
+    if (alert.show && alert.type === "success") {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, alert.type]);
 
   if (!profile || !recommendations) {
     return (
@@ -33,11 +57,29 @@ export default function QuizResult() {
   const profileName = profileNames[profile] || profile;
 
   const handleRestart = () => {
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir refaire le test ? Vos résultats actuels seront remplacés.",
+      action: "restart",
+      data: null
+    });
+  };
+
+  const confirmRestart = () => {
     localStorage.removeItem("recommendations");
     navigate("/quiz");
   };
 
   const handleLogout = () => {
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir vous déconnecter ?",
+      action: "logout",
+      data: null
+    });
+  };
+
+  const confirmLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
     navigate("/signin");
@@ -61,12 +103,42 @@ export default function QuizResult() {
         })
       });
       const data = await response.json();
-      if (response.ok) alert("Profil et recommandations sauvegardés !");
-      else alert("Erreur lors de la sauvegarde du profil.");
+      if (response.ok) {
+        setAlert({
+          show: true,
+          message: "Profil et recommandations sauvegardés avec succès !",
+          type: "success",
+        });
+      } else {
+        setAlert({
+          show: true,
+          message: data.message || "Erreur lors de la sauvegarde du profil.",
+          type: "error",
+        });
+      }
     } catch (error) {
       console.error(error);
-      alert("Erreur lors de la sauvegarde du profil.");
+      setAlert({
+        show: true,
+        message: "Erreur de connexion lors de la sauvegarde du profil.",
+        type: "error",
+      });
     }
+  };
+
+  // Gestionnaire des confirmations
+  const handleConfirm = () => {
+    switch (confirm.action) {
+      case "logout":
+        confirmLogout();
+        break;
+      case "restart":
+        confirmRestart();
+        break;
+      default:
+        break;
+    }
+    closeConfirm();
   };
 
   // Utiliser directement les sections des recommandations
@@ -292,6 +364,24 @@ export default function QuizResult() {
           </button>
         </div>
       </div>
+
+      {/* Intégration du CustomAlert */}
+      {alert.show && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={closeAlert}
+        />
+      )}
+
+      {/* Intégration du ConfirmModal */}
+      {confirm.show && (
+        <ConfirmModal
+          message={confirm.message}
+          onConfirm={handleConfirm}
+          onCancel={closeConfirm}
+        />
+      )}
     </div>
   );
 }

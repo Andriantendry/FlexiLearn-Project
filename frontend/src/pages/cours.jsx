@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/cours.css";
+import CustomAlert from "../components/CustomAlert";
+import ConfirmModal from "../components/ConfirmModal";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const ICON_BG_MAP = {
@@ -306,7 +308,10 @@ function GuidePanel({ subject, onClose, onStatusChange }) {
         (guide.indicateurs.mini_tests || []).forEach((mt, i) => addText(`${i+1}. ${mt}`, 9, false, [50,50,50], 4));
       }
       doc.save(`Guide_VAK_${subject.title.replace(/\s+/g, "_")}.pdf`);
-    } catch (err) { alert("Erreur export PDF."); }
+    } catch (err) { 
+      // Remplacé alert par une gestion d'erreur interne
+      console.error("Erreur export PDF:", err);
+    }
     finally { setExporting(false); }
   };
 
@@ -596,6 +601,28 @@ export default function Cours() {
   const [showGuidePanel,  setShowGuidePanel]  = useState(false);
   const [userData,        setUserData]        = useState(null);
   const [search,          setSearch]          = useState("");
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
+  const [confirm, setConfirm] = useState({ show: false, message: "", action: null, data: null });
+
+  // Fermer l'alerte
+  const closeAlert = () => {
+    setAlert({ ...alert, show: false });
+  };
+
+  // Fermer la confirmation
+  const closeConfirm = () => {
+    setConfirm({ show: false, message: "", action: null, data: null });
+  };
+
+  // Fermeture automatique pour les messages de succès après 3 secondes
+  useEffect(() => {
+    if (alert.show && alert.type === "success") {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, alert.type]);
 
   useEffect(() => {
     const userId = getUserId();
@@ -611,6 +638,15 @@ export default function Cours() {
   };
 
   const handleLogout = () => {
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir vous déconnecter ?",
+      action: "logout",
+      data: null
+    });
+  };
+
+  const confirmLogout = () => {
     localStorage.removeItem("user_id");
     navigate("/signin");
   };
@@ -652,8 +688,16 @@ export default function Cours() {
     setSelectedSubject(prev => prev?.id_subject === subject.id_subject ? { ...prev, status } : prev);
   };
 
-  const handleDeleteSubject = async (subject) => {
-    if (!window.confirm(`Supprimer "${subject.title}" et son guide ?`)) return;
+  const handleDeleteSubject = (subject) => {
+    setConfirm({
+      show: true,
+      message: `Supprimer "${subject.title}" et son guide ?`,
+      action: "deleteSubject",
+      data: subject
+    });
+  };
+
+  const confirmDeleteSubject = async (subject) => {
     try {
       await apiFetch(`/cours/subjects/${subject.id_subject}`, { method: "DELETE" });
       setSubjects(prev => prev.filter(s => s.id_subject !== subject.id_subject));
@@ -661,7 +705,33 @@ export default function Cours() {
         setShowGuidePanel(false);
         setSelectedSubject(null);
       }
-    } catch (_) {}
+      setAlert({
+        show: true,
+        message: `"${subject.title}" a été supprimé avec succès.`,
+        type: "success",
+      });
+    } catch (_) {
+      setAlert({
+        show: true,
+        message: `Erreur lors de la suppression de "${subject.title}".`,
+        type: "error",
+      });
+    }
+  };
+
+  // Gestionnaire des confirmations
+  const handleConfirm = () => {
+    switch (confirm.action) {
+      case "logout":
+        confirmLogout();
+        break;
+      case "deleteSubject":
+        confirmDeleteSubject(confirm.data);
+        break;
+      default:
+        break;
+    }
+    closeConfirm();
   };
 
   return (
@@ -839,6 +909,24 @@ export default function Cours() {
           </div>
         )}
       </main>
+
+      {/* Intégration du CustomAlert */}
+      {alert.show && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={closeAlert}
+        />
+      )}
+
+      {/* Intégration du ConfirmModal */}
+      {confirm.show && (
+        <ConfirmModal
+          message={confirm.message}
+          onConfirm={handleConfirm}
+          onCancel={closeConfirm}
+        />
+      )}
     </div>
   );
 }

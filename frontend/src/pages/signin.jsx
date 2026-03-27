@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import CustomAlert from "../components/CustomAlert";
 import "../styles/signin&signup.css";
 import mail_icone from "../assets/icones/email.png";
 import lock_icone from "../assets/icones/lock.png";
@@ -7,9 +8,6 @@ import eye_hide_icone from "../assets/icones/eye_hide.png";
 import { Link, useNavigate } from "react-router-dom";
 import LOGO_SRC from "../assets/images/flexi_logo.png";
 
-/* ══════════════════════════════════════════════
-   LEFTPANEL — SignIn
-══════════════════════════════════════════════ */
 function LeftPanel({ mode = "signin" }) {
   const [phase, setPhase] = useState("logo");
 
@@ -23,7 +21,6 @@ function LeftPanel({ mode = "signin" }) {
 
   return (
     <div className="lp-root">
-      {/* Particules décoratives */}
       <div className="lp-particles" aria-hidden="true">
         {[...Array(16)].map((_, i) => (
           <div
@@ -41,14 +38,12 @@ function LeftPanel({ mode = "signin" }) {
         ))}
       </div>
 
-      {/* Logo animé */}
       {(phase === "logo" || phase === "glow" || phase === "melt") && (
         <div className={`lp-logo-wrap lp-logo-${phase}`}>
           <img src={LOGO_SRC} alt="FlexiLearn" className="lp-logo-img" />
         </div>
       )}
 
-      {/* Brand block après fondu */}
       {(phase === "text" || phase === "done") && (
         <div className="lp-brand-block">
           <div className="lp-mini-wrap">
@@ -88,7 +83,6 @@ function LeftPanel({ mode = "signin" }) {
         </div>
       )}
 
-      {/* Lien vers l'autre page — aligné horizontalement avec le titre */}
       <p className="lp-foot">
         {mode === "signin" ? (
           <>
@@ -110,14 +104,20 @@ function LeftPanel({ mode = "signin" }) {
   );
 }
 
-/* ══════════════════════════════════════════════
-   PAGE CONNEXION
-══════════════════════════════════════════════ */
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
+  const [alert, setAlert] = useState(null);
   const navigate = useNavigate();
+
+  // Auto fermeture de l'alerte
+  useEffect(() => {
+    if (alert) {
+      const timer = setTimeout(() => setAlert(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -127,25 +127,46 @@ export default function SignIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       const data = await res.json();
       const userId = data.user_id || data.user?.id || data.id;
+
       if (userId) {
         localStorage.setItem("user_id", userId);
-        alert(
-          "Connexion réussie ! Prêt à découvrir ton style d'apprentissage ? 🚀"
-        );
-        navigate("/userspace");
-      } 
-      
-      if (!res.ok) alert("Échec de la connexion");
+
+        setAlert({
+          message: "Connexion réussie !",
+          type: "success",
+        });
+
+        setTimeout(() => {
+          navigate("/userspace");
+        }, 1500);
+      } else {
+        setAlert({
+          message: "Échec de la connexion",
+          type: "error",
+        });
+      }
     } catch (error) {
-      console.error("Erreur :", error);
-      alert("Erreur de connexion au serveur");
+      setAlert({
+        message: "Erreur serveur",
+        type: "error",
+      });
     }
   };
 
   return (
     <div className="signin-container">
+
+      {alert && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
       <LeftPanel mode="signin" />
 
       <div className="signin-right">

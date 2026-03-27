@@ -7,12 +7,10 @@ import lock_icone from "../assets/icones/lock.png";
 import user_icone from "../assets/icones/user.png";
 import { Link, useNavigate } from "react-router-dom";
 import LOGO_SRC from "../assets/images/flexi_logo.png";
+import CustomAlert from "../components/CustomAlert";
 
-/* ══════════════════════════════════════════════
-   LEFTPANEL — intégré directement dans SignUp
-══════════════════════════════════════════════ */
 function LeftPanel({ mode = "signup" }) {
-  const [phase, setPhase] = useState("logo"); // logo → glow → melt → text → done
+  const [phase, setPhase] = useState("logo");
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("glow"), 800);
@@ -24,7 +22,6 @@ function LeftPanel({ mode = "signup" }) {
 
   return (
     <div className="lp-root">
-      {/* Particules décoratives */}
       <div className="lp-particles" aria-hidden="true">
         {[...Array(16)].map((_, i) => (
           <div
@@ -42,7 +39,7 @@ function LeftPanel({ mode = "signup" }) {
         ))}
       </div>
 
-      {/* Logo animé */}
+      {/* Logo */}
       {(phase === "logo" || phase === "glow" || phase === "melt") && (
         <div className={`lp-logo-wrap lp-logo-${phase}`}>
           <img src={LOGO_SRC} alt="FlexiLearn" className="lp-logo-img" />
@@ -89,7 +86,6 @@ function LeftPanel({ mode = "signup" }) {
         </div>
       )}
 
-      {/* Lien vers l'autre page — aligné horizontalement avec le titre */}
       <p className="lp-foot">
         {mode === "signin" ? (
           <>
@@ -111,9 +107,8 @@ function LeftPanel({ mode = "signup" }) {
   );
 }
 
-/* ══════════════════════════════════════════════
-   PAGE INSCRIPTION
-══════════════════════════════════════════════ */
+// PAGE INSCRIPTION
+
 export default function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -121,14 +116,37 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
   const navigate = useNavigate();
+
+  // Fermer l'alerte
+  const closeAlert = () => {
+    setAlert({ ...alert, show: false });
+  };
+
+  // Fermeture automatique pour les messages de succès après 3 secondes
+  useEffect(() => {
+    if (alert.show && alert.type === "success") {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, alert.type]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Vérification de la correspondance des mots de passe
     if (password !== confirmPassword) {
-      alert("Les mots de passe ne correspondent pas ❌");
+      setAlert({
+        show: true,
+        message: "Les mots de passe ne correspondent pas",
+        type: "error",
+      });
       return;
     }
+    
     setLoading(true);
     try {
       const res = await fetch("http://localhost:8000/user/signup", {
@@ -137,16 +155,34 @@ export default function SignUp() {
         body: JSON.stringify({ username, email, password }),
       });
       const data = await res.json();
+      
       if (res.ok) {
         localStorage.setItem("email", data.email);
-        alert("E-mail envoyé !");
-        navigate("/verify-code");
+        setAlert({
+          show: true,
+          message: "E-mail envoyé ! Vérifiez votre boîte de réception.",
+          type: "success",
+        });
+        // Redirection après 2 secondes pour laisser le temps de voir le message
+        setTimeout(() => {
+          navigate("/verify-code");
+        }, 2000);
       } else {
-        alert("Erreur serveur interne");
+        // Gestion des erreurs spécifiques du backend
+        const errorMessage = data.message || "Erreur lors de l'inscription";
+        setAlert({
+          show: true,
+          message: errorMessage,
+          type: "error",
+        });
       }
     } catch (err) {
       console.error(err);
-      alert("Erreur serveur. Réessayez dans quelques instants.");
+      setAlert({
+        show: true,
+        message: "Erreur de connexion au serveur. Réessayez dans quelques instants.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -242,6 +278,15 @@ export default function SignUp() {
           </button>
         </form>
       </div>
+
+      {/* Intégration du CustomAlert */}
+      {alert.show && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={closeAlert}
+        />
+      )}
     </div>
   );
 }

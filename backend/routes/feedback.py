@@ -113,13 +113,13 @@ def get_feedback_stats(db: Session = Depends(get_db)):
     # Répartition par catégorie
     category_counts = db.query(
         Feedback.category,
-        func.count(Feedback.id_feedback)  # ✅ Changé de 'id' à 'id_feedback'
+        func.count(Feedback.id_feedback) 
     ).group_by(Feedback.category).all()
     
     # Répartition par note
     rating_counts = db.query(
         Feedback.rating,
-        func.count(Feedback.id_feedback)  # ✅ Changé de 'id' à 'id_feedback'
+        func.count(Feedback.id_feedback)
     ).group_by(Feedback.rating).all()
     
     return {
@@ -135,7 +135,7 @@ def delete_feedback(feedback_id: int, db: Session = Depends(get_db)):
     """
     Supprimer un feedback
     """
-    feedback = db.query(Feedback).filter(Feedback.id_feedback == feedback_id).first()  # ✅ Changé
+    feedback = db.query(Feedback).filter(Feedback.id_feedback == feedback_id).first() 
     
     if not feedback:
         raise HTTPException(status_code=404, detail="Feedback non trouvé")

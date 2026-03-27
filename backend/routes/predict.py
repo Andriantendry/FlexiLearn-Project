@@ -92,7 +92,7 @@ predictor = VAKPredictor()
 @router.post("/predict")
 async def predict_endpoint(
     input_data: QuizInput,
-    user_id: int, # récupéré depuis token plus tard
+    user_id: int,
     db: Session = Depends(get_db)
 ):
     # Normalisation
@@ -128,7 +128,7 @@ async def predict_endpoint(
     db.commit()
     db.refresh(profile)
 
-    # 4️⃣ Retour frontend (pour affichage immédiat)
+    # Retour frontend
     return {
         "message": "Profil prédit et enregistré avec succès",
         "result": result
@@ -136,7 +136,7 @@ async def predict_endpoint(
 
 @router.get("/quiz")
 def get_quiz():
-    # chemin vers le dossier backend/
+    # chemin vers le dossier backend
     base_dir = Path(__file__).resolve().parent.parent
 
     # chemin vers quiz.json

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/feedback.css";
+import CustomAlert from "../components/CustomAlert";
 
 export default function FeedbackPage() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function FeedbackPage() {
   const [includeEmail, setIncludeEmail] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
 
   const categories = [
     { id: "ui", label: "Interface utilisateur" },
@@ -24,35 +25,78 @@ export default function FeedbackPage() {
     { id: "other", label: "Autre" },
   ];
 
+  // Fermer l'alerte
+  const closeAlert = () => {
+    setAlert({ ...alert, show: false });
+  };
+
+  // Fermeture automatique pour les messages de succès après 3 secondes
+  useEffect(() => {
+    if (alert.show && alert.type === "success") {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, alert.type]);
+
   const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
   const validateForm = () => {
     if (rating === 0) {
-      setError("⚠️ Veuillez sélectionner une note.");
+      setAlert({
+        show: true,
+        message: "⚠️ Veuillez sélectionner une note.",
+        type: "warning",
+      });
       return false;
     }
     if (!category) {
-      setError("⚠️ Veuillez choisir une catégorie.");
+      setAlert({
+        show: true,
+        message: "⚠️ Veuillez choisir une catégorie.",
+        type: "warning",
+      });
       return false;
     }
     if (!feedback.trim()) {
-      setError("⚠️ Veuillez entrer votre commentaire.");
+      setAlert({
+        show: true,
+        message: "⚠️ Veuillez entrer votre commentaire.",
+        type: "warning",
+      });
       return false;
     }
     if (feedback.trim().length < 10) {
-      setError("⚠️ Votre commentaire doit contenir au moins 10 caractères.");
+      setAlert({
+        show: true,
+        message: "⚠️ Votre commentaire doit contenir au moins 10 caractères.",
+        type: "warning",
+      });
       return false;
     }
     if (feedback.trim().length > 1000) {
-      setError("⚠️ Votre commentaire ne peut pas dépasser 1000 caractères.");
+      setAlert({
+        show: true,
+        message: "⚠️ Votre commentaire ne peut pas dépasser 1000 caractères.",
+        type: "warning",
+      });
       return false;
     }
     if (includeEmail && !email.trim()) {
-      setError("⚠️ Veuillez entrer votre email ou décocher l'option.");
+      setAlert({
+        show: true,
+        message: "⚠️ Veuillez entrer votre email ou décocher l'option.",
+        type: "warning",
+      });
       return false;
     }
     if (includeEmail && !isValidEmail(email)) {
-      setError("⚠️ Veuillez entrer un email valide.");
+      setAlert({
+        show: true,
+        message: "⚠️ Veuillez entrer un email valide.",
+        type: "warning",
+      });
       return false;
     }
     return true;
@@ -60,7 +104,6 @@ export default function FeedbackPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     if (!validateForm()) return;
     setLoading(true);
 
@@ -86,11 +129,21 @@ export default function FeedbackPage() {
         throw new Error(errorData.detail || "Erreur lors de l'envoi");
       }
 
+      setAlert({
+        show: true,
+        message: "✅ Merci pour votre feedback ! Redirection en cours...",
+        type: "success",
+      });
+      
       setSubmitted(true);
       setTimeout(() => navigate("/userspace"), 3000);
     } catch (err) {
       console.error("Erreur:", err);
-      setError(`❌ ${err.message}`);
+      setAlert({
+        show: true,
+        message: `❌ ${err.message}`,
+        type: "error",
+      });
       setLoading(false);
     }
   };
@@ -121,6 +174,15 @@ export default function FeedbackPage() {
             Redirection en cours...
           </div>
         </div>
+        
+        {/* CustomAlert intégré aussi en cas de besoin */}
+        {alert.show && (
+          <CustomAlert
+            message={alert.message}
+            type={alert.type}
+            onClose={closeAlert}
+          />
+        )}
       </div>
     );
   }
@@ -283,8 +345,7 @@ export default function FeedbackPage() {
 
               </div>
 
-              {error && <div className="error-box">{error}</div>}
-
+              {/* Affichage des erreurs via CustomAlert uniquement, plus de error box */}
               <div className="submit-section">
                 <div className="submit-row">
                   <p className="legal-text">
@@ -318,6 +379,15 @@ export default function FeedbackPage() {
 
         </div>
       </div>
+
+      {/* Intégration du CustomAlert */}
+      {alert.show && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={closeAlert}
+        />
+      )}
     </div>
   );
 }

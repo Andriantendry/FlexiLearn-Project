@@ -68,7 +68,7 @@ def get_recommendations(req: RecommendationRequest):
         raise HTTPException(status_code=500, detail=f"Erreur Gemini: {str(e)}")
 
 
-# ✅ ENDPOINT - RÉCUPÉRER LA RECOMMANDATION D'UN UTILISATEUR
+# ENDPOINT - RÉCUPÉRER LA RECOMMANDATION D'UN UTILISATEUR
 @router.get("/user/{user_id}")
 def get_user_recommendation(user_id: int, db: Session = Depends(get_db)):
     """
@@ -100,7 +100,7 @@ def get_user_recommendation(user_id: int, db: Session = Depends(get_db)):
     }
 
 
-# ✅ ENDPOINT - RÉCUPÉRER LA RECOMMANDATION PAR ID DE PROFIL
+# ENDPOINT - RÉCUPÉRER LA RECOMMANDATION PAR ID DE PROFIL
 @router.get("/profile/{profile_id}")
 def get_profile_recommendation(profile_id: int, db: Session = Depends(get_db)):
     """
@@ -133,7 +133,7 @@ def get_profile_recommendation(profile_id: int, db: Session = Depends(get_db)):
     }
 
 
-# ✅ ENDPOINT - VÉRIFIER SI UN UTILISATEUR A UNE RECOMMANDATION
+# ENDPOINT - VÉRIFIER SI UN UTILISATEUR A UNE RECOMMANDATION
 @router.get("/check/{user_id}")
 def check_user_recommendation(user_id: int, db: Session = Depends(get_db)):
     """

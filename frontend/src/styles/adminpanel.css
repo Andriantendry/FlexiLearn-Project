@@ -307,9 +307,9 @@ body:has(.admin-panel) #root {
 }
 
 .stat-badge {
-  font-size: 0.75rem;
+  font-size: 30px;
   font-weight: 700;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 0.25rem;
 }
 

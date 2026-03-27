@@ -4,6 +4,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import human from "../assets/icones/person.png";
 import robot from "../assets/images/logo.png";
+import CustomAlert from "../components/CustomAlert";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -20,16 +22,38 @@ export default function ChatPage() {
   const [error, setError] = useState(null);
   const [generatingReco, setGeneratingReco] = useState(false);
   const [sendError, setSendError] = useState(null);
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
+  const [confirm, setConfirm] = useState({ show: false, message: "", action: null, data: null });
 
   const chatEndRef = useRef(null);
+
+  // Fermer l'alerte
+  const closeAlert = () => {
+    setAlert({ ...alert, show: false });
+  };
+
+  // Fermer la confirmation
+  const closeConfirm = () => {
+    setConfirm({ show: false, message: "", action: null, data: null });
+  };
+
+  // Fermeture automatique pour les messages de succès après 3 secondes
+  useEffect(() => {
+    if (alert.show && alert.type === "success") {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, alert.type]);
 
   // Scroll automatique
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-   // Vérification et initialisation
-useEffect(() => {
+  // Vérification et initialisation
+  useEffect(() => {
     const userId = localStorage.getItem("user_id");
     if (!userId) {
       navigate("/signin");
@@ -45,7 +69,12 @@ useEffect(() => {
     // ✅ Validation stricte
     if (!receivedProfile || typeof receivedProfile !== 'string') {
       console.error("Profil invalide ou manquant, redirection vers quiz");
-      navigate("/quiz");
+      setAlert({
+        show: true,
+        message: "Profil non trouvé. Veuillez d'abord compléter le quiz.",
+        type: "warning",
+      });
+      setTimeout(() => navigate("/quiz"), 2000);
       return;
     }
 
@@ -71,7 +100,7 @@ useEffect(() => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
             session_id: sessionId, 
-            profile: profile  // ✅ Maintenant c'est bien une string
+            profile: profile
           }),
         });
 
@@ -91,6 +120,11 @@ useEffect(() => {
       } catch (err) {
         console.error("Erreur lors du chargement:", err);
         setError(err.message);
+        setAlert({
+          show: true,
+          message: "Erreur de connexion au serveur. Vérifiez que le backend est démarré.",
+          type: "error",
+        });
         setMessages([{ 
           type: "bot", 
           text: "Une erreur s'est produite. Veuillez réessayer." 
@@ -158,6 +192,12 @@ useEffect(() => {
         });
         
         localStorage.setItem("recommendations", JSON.stringify(data.recommendations));
+        
+        setAlert({
+          show: true,
+          message: "Recommandations générées avec succès !",
+          type: "success",
+        });
       }
     } catch (err) {
       console.error("Erreur:", err);
@@ -175,6 +215,12 @@ useEffect(() => {
       } else {
         setSendError("general");
       }
+      
+      setAlert({
+        show: true,
+        message: errorMessage,
+        type: "error",
+      });
       
       // Remplacer le message de chargement par l'erreur
       setMessages((prev) => {
@@ -197,15 +243,36 @@ useEffect(() => {
   };
 
   const handleReco = () => {
-  const recoString = localStorage.getItem("recommendations") || "";
-  const recommendations = recoString ? JSON.parse(recoString) : null;
-  navigate("/quiz-result", { state: { profile, recommendations } });
-};
+    const recoString = localStorage.getItem("recommendations") || "";
+    const recommendations = recoString ? JSON.parse(recoString) : null;
+    navigate("/quiz-result", { state: { profile, recommendations } });
+  };
 
   const handleLogout = () => {
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir vous déconnecter ?",
+      action: "logout",
+      data: null
+    });
+  };
+
+  const confirmLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
     navigate("/signin");
+  };
+
+  // Gestionnaire des confirmations
+  const handleConfirm = () => {
+    switch (confirm.action) {
+      case "logout":
+        confirmLogout();
+        break;
+      default:
+        break;
+    }
+    closeConfirm();
   };
 
   if (loading) {
@@ -242,6 +309,13 @@ useEffect(() => {
             </div>
           </div>
         </div>
+        {alert.show && (
+          <CustomAlert
+            message={alert.message}
+            type={alert.type}
+            onClose={closeAlert}
+          />
+        )}
       </div>
     );
   }
@@ -327,6 +401,24 @@ useEffect(() => {
           )}
         </div>
       </div>
+
+      {/* Intégration du CustomAlert */}
+      {alert.show && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={closeAlert}
+        />
+      )}
+
+      {/* Intégration du ConfirmModal */}
+      {confirm.show && (
+        <ConfirmModal
+          message={confirm.message}
+          onConfirm={handleConfirm}
+          onCancel={closeConfirm}
+        />
+      )}
     </div>
   );
 }

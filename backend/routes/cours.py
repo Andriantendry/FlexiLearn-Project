@@ -18,7 +18,7 @@ router = APIRouter(
 
 VAK_LABELS = {"V": "Visuel", "A": "Auditif", "K": "Kinesthésique"}
 
-# Mapping inverse : si la DB stocke le label complet au lieu du code
+# Mapping
 VAK_CODE = {
     "Visuel": "V", "visuel": "V",
     "Auditif": "A", "auditif": "A",
@@ -33,7 +33,7 @@ def to_vak_code(val: str) -> str:
 
 
 
-# ── Prompt VAK ────────────────────────────────────────────────────────────────
+# Prompt VAK 
 
 def build_guide_prompt(profile, profil_dominant: str, profil_secondaire: str, theme: str) -> str:
     """Construit un prompt enrichi depuis les stats et recommandations réelles du profil."""
@@ -56,7 +56,6 @@ def build_guide_prompt(profile, profil_dominant: str, profil_secondaire: str, th
                 for point in item.get("points", []):
                     reco_points.append(point)
     elif isinstance(reco, str):
-        # Parfois stocké comme string JSON
         try:
             reco_parsed = json.loads(reco)
             sections = reco_parsed.get("sections", []) if isinstance(reco_parsed, dict) else []
@@ -149,7 +148,7 @@ JSON uniquement, sans texte autour, sans markdown :
   }}
 }}"""
 
-# ── Routes subjects ───────────────────────────────────────────────────────────
+# Routes subjects
 
 @router.get("/subjects", response_model=list[SubjectResponse])
 def get_subjects(user_id: int, status: Optional[str] = None, db: Session = Depends(get_db)):
@@ -256,7 +255,7 @@ def delete_subject(subject_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression : {str(e)}")
 
 
-# ── Routes guides ─────────────────────────────────────────────────────────────
+# Routes guides
 
 @router.get("/subjects/{subject_id}/guide", response_model=GuideResponse)
 def get_or_generate_guide(subject_id: int, db: Session = Depends(get_db)):

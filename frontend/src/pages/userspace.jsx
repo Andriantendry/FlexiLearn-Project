@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/userspace.css";
+import CustomAlert from "../components/CustomAlert";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function UserSpace() {
   const navigate = useNavigate();
@@ -10,6 +12,28 @@ export default function UserSpace() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasRecommendation, setHasRecommendation] = useState(false);
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
+  const [confirm, setConfirm] = useState({ show: false, message: "", action: null, data: null });
+
+  // Fermer l'alerte
+  const closeAlert = () => {
+    setAlert({ ...alert, show: false });
+  };
+
+  // Fermer la confirmation
+  const closeConfirm = () => {
+    setConfirm({ show: false, message: "", action: null, data: null });
+  };
+
+  // Fermeture automatique pour les messages de succès après 3 secondes
+  useEffect(() => {
+    if (alert.show && alert.type === "success") {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alert.show, alert.type]);
 
   // Conseils prédéfinis selon le type de profil
   const getStyleDescription = (style) => {
@@ -233,15 +257,28 @@ export default function UserSpace() {
   }, [navigate]);
 
   const handleRetakeTest = () => {
-    const confirmation = window.confirm(
-      "Êtes-vous sûr de vouloir refaire le test ? Vos résultats actuels seront remplacés."
-    );
-    if (confirmation) {
-      navigate("/quiz");
-    }
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir refaire le test ? Vos résultats actuels seront remplacés.",
+      action: "retakeTest",
+      data: null
+    });
+  };
+
+  const confirmRetakeTest = () => {
+    navigate("/quiz");
   };
 
   const handleLogout = () => {
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir vous déconnecter ?",
+      action: "logout",
+      data: null
+    });
+  };
+
+  const confirmLogout = () => {
     localStorage.removeItem("user_id");
     navigate("/signin");
   };
@@ -265,9 +302,9 @@ export default function UserSpace() {
     const handleRecommendations = () => {
         console.log("handleRecommendations appelé");
         console.log("hasRecommendation:", hasRecommendation);
-        console.log("profileData.recommendation:", profileData.recommendation);
+        console.log("profileData.recommendation:", profileData?.recommendation);
         
-        if (hasRecommendation && profileData.recommendation) {
+        if (hasRecommendation && profileData?.recommendation) {
             // Parser les recommandations si elles sont en string JSON
             let recommendations;
             try {
@@ -304,18 +341,26 @@ export default function UserSpace() {
             } catch (error) {
                 console.error("Erreur lors du parsing des recommandations:", error);
                 console.error("Données brutes:", profileData.recommendation);
-                alert("Erreur lors du chargement des recommandations. Veuillez refaire le test.");
-                navigate("/quiz");
+                setAlert({
+                  show: true,
+                  message: "Erreur lors du chargement des recommandations. Veuillez refaire le test.",
+                  type: "error",
+                });
+                setTimeout(() => navigate("/quiz"), 2000);
             }
         } else {
             // Pas de recommandations, rediriger vers le quiz
-            const confirmation = window.confirm(
-                "Vous n'avez pas encore de recommandations personnalisées. Voulez-vous passer le test maintenant ?"
-            );
-            if (confirmation) {
-                navigate("/quiz");
-            }
+            setConfirm({
+              show: true,
+              message: "Vous n'avez pas encore de recommandations personnalisées. Voulez-vous passer le test maintenant ?",
+              action: "goToQuiz",
+              data: null
+            });
         }
+    };
+
+    const confirmGoToQuiz = () => {
+      navigate("/quiz");
     };
 
     // Fonction pour les cours (coming soon)
@@ -329,6 +374,23 @@ export default function UserSpace() {
     return userRole === "admin" || userRole === "superadmin";
     };
 
+    // Gestionnaire des confirmations
+    const handleConfirm = () => {
+      switch (confirm.action) {
+        case "logout":
+          confirmLogout();
+          break;
+        case "retakeTest":
+          confirmRetakeTest();
+          break;
+        case "goToQuiz":
+          confirmGoToQuiz();
+          break;
+        default:
+          break;
+      }
+      closeConfirm();
+    };
 
   if (loading) {
     return (
@@ -365,6 +427,13 @@ export default function UserSpace() {
             Passer le test
           </button>
         </div>
+        {alert.show && (
+          <CustomAlert
+            message={alert.message}
+            type={alert.type}
+            onClose={closeAlert}
+          />
+        )}
       </div>
     );
   }
@@ -637,12 +706,11 @@ export default function UserSpace() {
             Nous avons personnalisé votre tableau de bord et vos suggestions de cours en fonction de ces résultats. Plongez dans votre première leçon optimisée visuellement dès maintenant.
         </p>
         <button 
-            className="cta-button cta-button-disabled" 
-            disabled
+            className="cta-button" 
+            onClick={handleCours}
             title="Fonctionnalité à venir"
         >
             Aller à Mes Cours
-            <span style={{ marginLeft: '0.5rem', fontSize: '0.875rem' }}>(Bientôt disponible)</span>
         </button>
         </div>
           </div>
@@ -658,6 +726,24 @@ export default function UserSpace() {
           </div>
         </footer>
       </div>
+
+      {/* Intégration du CustomAlert */}
+      {alert.show && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={closeAlert}
+        />
+      )}
+
+      {/* Intégration du ConfirmModal */}
+      {confirm.show && (
+        <ConfirmModal
+          message={confirm.message}
+          onConfirm={handleConfirm}
+          onCancel={closeConfirm}
+        />
+      )}
     </div>
   );
 }

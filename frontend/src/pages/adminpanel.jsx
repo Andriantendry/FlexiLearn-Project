@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/adminpanel.css";
+import CustomAlert from "../components/CustomAlert";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -16,20 +18,48 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [alert, setAlert] = useState({ show: false, message: "", type: "error" });
+  const [confirm, setConfirm] = useState({ show: false, message: "", action: null, data: null });
 
   const usersPerPage = 10;
   const feedbacksPerPage = 10;
   const adminUserId = localStorage.getItem("user_id");
 
-  const handleLogout = () => {
-    const confirmation = window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?");
-    if (confirmation) {
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("token");
-      localStorage.removeItem("username");
-      localStorage.removeItem("role");
-      navigate("/signin");
+  // Fermer l'alerte
+  const closeAlert = () => {
+    setAlert({ ...alert, show: false });
+  };
+
+  // Fermer la confirmation
+  const closeConfirm = () => {
+    setConfirm({ show: false, message: "", action: null, data: null });
+  };
+
+  // Fermeture automatique pour les messages de succès après 3 secondes
+  useEffect(() => {
+    if (alert.show && alert.type === "success") {
+      const timer = setTimeout(() => {
+        setAlert({ ...alert, show: false });
+      }, 3000);
+      return () => clearTimeout(timer);
     }
+  }, [alert.show, alert.type]);
+
+  const handleLogout = () => {
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir vous déconnecter ?",
+      action: "logout",
+      data: null
+    });
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+    navigate("/signin");
   };
 
   const getProfileColor = (letter) => {
@@ -51,6 +81,11 @@ export default function AdminPanel() {
       } catch (err) {
         console.error("Erreur stats:", err);
         setError(err.message);
+        setAlert({
+          show: true,
+          message: "Erreur lors du chargement des statistiques",
+          type: "error",
+        });
       }
     };
     if (adminUserId) fetchStats();
@@ -70,6 +105,11 @@ export default function AdminPanel() {
       } catch (err) {
         console.error("Erreur users:", err);
         setError(err.message);
+        setAlert({
+          show: true,
+          message: "Erreur lors du chargement des utilisateurs",
+          type: "error",
+        });
         setLoading(false);
       }
     };
@@ -88,6 +128,11 @@ export default function AdminPanel() {
       } catch (err) {
         console.error("Erreur feedbacks:", err);
         setError(err.message);
+        setAlert({
+          show: true,
+          message: "Erreur lors du chargement des feedbacks",
+          type: "error",
+        });
         setLoading(false);
       }
     };
@@ -108,32 +153,66 @@ export default function AdminPanel() {
     if (activeTab === "feedback") fetchFeedbackStats();
   }, [activeTab]);
 
-  const handleDeleteUser = async (userId, username) => {
+  const handleDeleteUser = (userId, username) => {
     const userToDelete = users.find(u => u.id === userId);
     if (userToDelete && userToDelete.role === "superadmin") {
-      alert("Impossible de supprimer un superadmin !");
+      setAlert({
+        show: true,
+        message: "Impossible de supprimer un superadmin !",
+        type: "warning",
+      });
       return;
     }
-    const confirmation = window.confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${username} ?`);
-    if (!confirmation) return;
+    setConfirm({
+      show: true,
+      message: `Êtes-vous sûr de vouloir supprimer l'utilisateur "${username}" ?`,
+      action: "deleteUser",
+      data: { userId, username }
+    });
+  };
+
+  const confirmDeleteUser = async (data) => {
+    const { userId, username } = data;
     try {
-      const response = await fetch(`http://localhost:8000/admin/user/${userId}?user_id=${adminUserId}`, { method: "DELETE" });
+      const response = await fetch(`http://localhost:8000/admin/user/${userId}?user_id=${adminUserId}`, { 
+        method: "DELETE" 
+      });
       if (!response.ok) throw new Error("Erreur lors de la suppression");
       setUsers(users.filter(u => u.id !== userId));
-      alert("Utilisateur supprimé avec succès");
+      setAlert({
+        show: true,
+        message: `Utilisateur "${username}" supprimé avec succès`,
+        type: "success",
+      });
     } catch (err) {
-      alert("Erreur lors de la suppression");
+      setAlert({
+        show: true,
+        message: "Erreur lors de la suppression",
+        type: "error",
+      });
     }
   };
 
-  const handleChangeRole = async (userId, currentRole, username) => {
+  const handleChangeRole = (userId, currentRole, username) => {
     if (currentRole === "superadmin") {
-      alert("Impossible de modifier le rôle d'un superadmin !");
+      setAlert({
+        show: true,
+        message: "Impossible de modifier le rôle d'un superadmin !",
+        type: "warning",
+      });
       return;
     }
     const newRole = currentRole === "admin" ? "user" : "admin";
-    const confirmation = window.confirm(`Voulez-vous changer le rôle de ${username} de "${currentRole}" à "${newRole}" ?`);
-    if (!confirmation) return;
+    setConfirm({
+      show: true,
+      message: `Voulez-vous changer le rôle de "${username}" de "${currentRole}" à "${newRole}" ?`,
+      action: "changeRole",
+      data: { userId, newRole, username, currentRole }
+    });
+  };
+
+  const confirmChangeRole = async (data) => {
+    const { userId, newRole, username, currentRole } = data;
     try {
       const response = await fetch(`http://localhost:8000/admin/user/${userId}/role?user_id=${adminUserId}`, {
         method: "PATCH",
@@ -145,23 +224,70 @@ export default function AdminPanel() {
         throw new Error(errorData.detail || "Erreur lors du changement de rôle");
       }
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-      alert(`Rôle de ${username} modifié : ${currentRole} → ${newRole}`);
+      setAlert({
+        show: true,
+        message: `Rôle de "${username}" modifié : ${currentRole} → ${newRole}`,
+        type: "success",
+      });
     } catch (err) {
-      alert(err.message || "Erreur lors du changement de rôle");
+      setAlert({
+        show: true,
+        message: err.message || "Erreur lors du changement de rôle",
+        type: "error",
+      });
     }
   };
 
-  const handleDeleteFeedback = async (feedbackId) => {
-    const confirmation = window.confirm("Êtes-vous sûr de vouloir supprimer ce feedback ?");
-    if (!confirmation) return;
+  const handleDeleteFeedback = (feedbackId) => {
+    setConfirm({
+      show: true,
+      message: "Êtes-vous sûr de vouloir supprimer ce feedback ?",
+      action: "deleteFeedback",
+      data: { feedbackId }
+    });
+  };
+
+  const confirmDeleteFeedback = async (data) => {
+    const { feedbackId } = data;
     try {
-      const response = await fetch(`http://localhost:8000/admin/feedback/${feedbackId}?user_id=${adminUserId}`, { method: "DELETE" });
+      const response = await fetch(`http://localhost:8000/admin/feedback/${feedbackId}?user_id=${adminUserId}`, { 
+        method: "DELETE" 
+      });
       if (!response.ok) throw new Error("Erreur lors de la suppression");
       setFeedbacks(feedbacks.filter(f => f.id_feedback !== feedbackId));
-      alert("Feedback supprimé avec succès");
+      setAlert({
+        show: true,
+        message: "Feedback supprimé avec succès",
+        type: "success",
+      });
     } catch (err) {
-      alert("Erreur lors de la suppression");
+      setAlert({
+        show: true,
+        message: "Erreur lors de la suppression",
+        type: "error",
+      });
     }
+  };
+
+  // Gestionnaire des confirmations
+  const handleConfirm = () => {
+    switch (confirm.action) {
+      case "logout":
+        confirmLogout();
+        break;
+      case "deleteUser":
+        confirmDeleteUser(confirm.data);
+        break;
+      case "changeRole":
+        confirmChangeRole(confirm.data);
+        break;
+      case "deleteFeedback":
+        confirmDeleteFeedback(confirm.data);
+        break;
+      default:
+        break;
+    }
+    closeConfirm();
   };
 
   const categoryLabels = {
@@ -224,34 +350,30 @@ export default function AdminPanel() {
         <div className="stat-card">
           <div className="stat-top">
             <div className="stat-icon blue"><span className="material-symbols-outlined">group</span></div>
-            <span className="stat-badge green">{stats?.recent_signups > 0 ? `+${stats.recent_signups}` : "0"}</span>
           </div>
           <p className="stat-label">Utilisateurs Totaux</p>
-          <h3 className="stat-number">{stats?.total_users?.toLocaleString() || 0}</h3>
+          <h3 className="stat-badge green">{stats?.total_users?.toLocaleString() || 0}</h3>
         </div>
         <div className="stat-card">
           <div className="stat-top">
             <div className="stat-icon purple"><span className="material-symbols-outlined">quiz</span></div>
-            <span className="stat-badge green">{stats?.total_profiles || 0}</span>
           </div>
           <p className="stat-label">Tests VAK Complétés</p>
-          <h3 className="stat-number">{stats?.total_profiles?.toLocaleString() || 0}</h3>
+          <h3 className="stat-badge green">{stats?.total_profiles?.toLocaleString() || 0}</h3>
         </div>
         <div className="stat-card">
           <div className="stat-top">
             <div className="stat-icon amber"><span className="material-symbols-outlined">verified_user</span></div>
-            <span className="stat-badge green">{stats?.verified_users || 0}</span>
           </div>
           <p className="stat-label">Utilisateurs Vérifiés</p>
-          <h3 className="stat-number">{stats?.verified_users?.toLocaleString() || 0}</h3>
+          <h3 className="stat-badge green">{stats?.verified_users?.toLocaleString() || 0}</h3>
         </div>
         <div className="stat-card">
           <div className="stat-top">
             <div className="stat-icon emerald"><span className="material-symbols-outlined">feedback</span></div>
-            <span className="stat-badge green">{stats?.total_feedbacks || 0}</span>
           </div>
           <p className="stat-label">Retours Totaux</p>
-          <h3 className="stat-number">{stats?.total_feedbacks?.toLocaleString() || 0}</h3>
+          <h3 className="stat-badge green">{stats?.total_feedbacks?.toLocaleString() || 0}</h3>
         </div>
       </div>
 
@@ -513,12 +635,10 @@ export default function AdminPanel() {
               </p>
             </div>
             <div className="header-right">
-              {/* Bouton retour vers userspace */}
               <Link to="/userspace" className="back-btn" title="Retour à l'espace utilisateur">
                 <span className="material-symbols-outlined">arrow_back</span>
                 Espace utilisateur
               </Link>
-
             </div>
           </header>
 
@@ -529,6 +649,24 @@ export default function AdminPanel() {
           </div>
         </main>
       </div>
+
+      {/* Intégration du CustomAlert */}
+      {alert.show && (
+        <CustomAlert
+          message={alert.message}
+          type={alert.type}
+          onClose={closeAlert}
+        />
+      )}
+
+      {/* Intégration du ConfirmModal */}
+      {confirm.show && (
+        <ConfirmModal
+          message={confirm.message}
+          onConfirm={handleConfirm}
+          onCancel={closeConfirm}
+        />
+      )}
     </div>
   );
 }
